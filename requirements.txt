@@ -1,1 +1,1 @@
-aeromaps==0.7
+aeromaps==0.7.0b0
