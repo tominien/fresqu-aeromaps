@@ -4,7 +4,7 @@ import numpy as np
 from bqplot import LinearScale, Lines, Axis, Figure, ColorScale
 sc_x = LinearScale()
 sc_y = LinearScale()
-sc_col = ColorScale(colors=["Black", "Black","Blue", "Yellow","Orange","Green","Magenta","Red"])
+sc_col = ColorScale(colors=["Black","Blue", "Yellow","Orange","Green","Magenta","Red"])
 
 def plot_traj(process_data):
     
@@ -24,11 +24,16 @@ def plot_traj(process_data):
            df["co2_emissions_2019technology"],
            df["co2_emissions_including_aircraft_efficiency"],
            df["co2_emissions_including_load_factor"],
-           df["co2_emissions_including_energy"]],
-        color=[1,2,3,4,5], 
+           df["co2_emissions_including_energy"],
+           df_climate.loc[years, "co2_emissions"] - df.loc[years, "carbon_offset"]],
+        color=[1,2,3,4,5,6],
+        stroke_width=0,
         fill='between',
-        fill_colors=["Blue","Yellow","Orange","Green"],
-        fill_opacities=[0.3]*4,
+        fill_colors=["Blue","Yellow","Orange","Green","Magenta"],
+        fill_opacities=[0.3]*5,
+        labels=["Changement de la demande","Efficacité technologique","Opérations en vol",
+                "Energies alternatives","Compensation carbone","Emission restantes"],
+        display_legend=True,
         scales={"x": sc_x, "y": sc_y, "color" : sc_col},
     )
 
@@ -41,15 +46,12 @@ def plot_traj(process_data):
 
     line_p = Lines(
         x=prospective_years, 
-        y=[df_climate.loc[prospective_years, "co2_emissions"],
-           df_climate.loc[prospective_years, "co2_emissions"] - df.loc[prospective_years, "carbon_offset"]],
-        color=[5,6], 
-        fill='between',
-        fill_colors=["Magenta"],
-        fill_opacities=[0.2],
-        scales={"x": sc_x, "y": sc_y,"color" : sc_col},
+        y=[df_climate.loc[prospective_years, "co2_emissions"] - df.loc[prospective_years, "carbon_offset"],
+           df.loc[prospective_years,"co2_emissions_2019technology_baseline3"]],
+        color=[6,0], 
+        scales={"x": sc_x, "y": sc_y, "color" : sc_col},
     )
-
+    
 
     return [line,line_h,line_p]
 

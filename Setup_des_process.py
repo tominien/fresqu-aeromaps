@@ -267,19 +267,19 @@ def compute_process1(Liste_des_widgets1):
     
     if Liste_des_widgets1 != []:
         if Liste_des_widgets1[2].value:
+            process1.parameters.cagr_passenger_medium_range_reference_periods_values = [1.0]
+            process1.parameters.cagr_passenger_long_range_reference_periods_values = [1.0]
+            process1.parameters.cagr_freight_reference_periods_values = [1.0]
             if Liste_des_widgets1[5].value:
-                process1.parameters.cagr_passenger_short_range_reference_periods_values = [-5.0, -5.0, -5.0]
+                process1.parameters.cagr_passenger_short_range_reference_periods_values = [-3.0, -3.0, -3.0]
             else:
-                process1.parameters.cagr_passenger_short_range_reference_periods_values = [-2.0, -2.0, -2.0]
-                process1.parameters.cagr_passenger_medium_range_reference_periods_values = [0.0]
-                process1.parameters.cagr_passenger_long_range_reference_periods_values = [0.0]
-                process1.parameters.cagr_freight_reference_periods_values = [0.0]
+                process1.parameters.cagr_passenger_short_range_reference_periods_values = [-1.0, -1.0, -1.0]
         if Liste_des_widgets1[3].value:
             process1.parameters.residual_carbon_offset_share_reference_years_values = [0.0, 0.0, 20.0, 20.0]
         if Liste_des_widgets1[4].value:
             process1.parameters.biofuel_share_reference_years_values = [0.0, 4.8, 24.0, 35.0]
             process1.parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0]
-        if Liste_des_widgets1[5].value:
+        if Liste_des_widgets1[5].value and not Liste_des_widgets1[2]:
             process1.parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0]
         if Liste_des_widgets1[6].value:
             process1.parameters.load_factor_end_year = 90
@@ -415,19 +415,19 @@ def compute_process2(Liste_des_widgets2):
         #if Liste_des_widgets1[1].value:
 
         if Liste_des_widgets2[2].value:
+            process2.parameters.cagr_passenger_medium_range_reference_periods_values = [1.0]
+            process2.parameters.cagr_passenger_long_range_reference_periods_values = [1.0]
+            process2.parameters.cagr_freight_reference_periods_values = [1.0]
             if Liste_des_widgets2[5].value:
-                process2.parameters.cagr_passenger_short_range_reference_periods_values = [-5.0, -5.0, -5.0]
+                process2.parameters.cagr_passenger_short_range_reference_periods_values = [-3.0, -3.0, -3.0]
             else:
-                process2.parameters.cagr_passenger_short_range_reference_periods_values = [-2.0, -2.0, -2.0]
-                process2.parameters.cagr_passenger_medium_range_reference_periods_values = [0.0]
-                process2.parameters.cagr_passenger_long_range_reference_periods_values = [0.0]
-                process2.parameters.cagr_freight_reference_periods_values = [0.0]
+                process2.parameters.cagr_passenger_short_range_reference_periods_values = [-1.0, -1.0, -1.0]        
         if Liste_des_widgets2[3].value:
             process2.parameters.residual_carbon_offset_share_reference_years_values = [0.0, 0.0, 20.0, 20.0]
         if Liste_des_widgets2[4].value:
             process2.parameters.biofuel_share_reference_years_values = [0.0, 4.8, 24.0, 35.0]
             process2.parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0]
-        if Liste_des_widgets2[5].value:
+        if Liste_des_widgets2[5].value and not Liste_des_widgets1[2]:
             process2.parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0]
         if Liste_des_widgets2[6].value:
             process2.parameters.load_factor_end_year = 90
@@ -561,19 +561,19 @@ def compute_process3(Liste_des_widgets3):
         #if Liste_des_widgets1[1].value:
 
         if Liste_des_widgets3[2].value:
+            process3.parameters.cagr_passenger_medium_range_reference_periods_values = [1.0]
+            process3.parameters.cagr_passenger_long_range_reference_periods_values = [1.0]
+            process3.parameters.cagr_freight_reference_periods_values = [1.0]
             if Liste_des_widgets3[5].value:
-                process3.parameters.cagr_passenger_short_range_reference_periods_values = [-5.0, -5.0, -5.0]
+                process3.parameters.cagr_passenger_short_range_reference_periods_values = [-3.0, -3.0, -3.0]
             else:
-                process3.parameters.cagr_passenger_short_range_reference_periods_values = [-2.0, -2.0, -2.0]
-                process3.parameters.cagr_passenger_medium_range_reference_periods_values = [0.0]
-                process3.parameters.cagr_passenger_long_range_reference_periods_values = [0.0]
-                process3.parameters.cagr_freight_reference_periods_values = [0.0]
+                process3.parameters.cagr_passenger_short_range_reference_periods_values = [-1.0, -1.0, -1.0]
         if Liste_des_widgets3[3].value:
             process3.parameters.residual_carbon_offset_share_reference_years_values = [0.0, 0.0, 20.0, 20.0]
         if Liste_des_widgets3[4].value:
             process3.parameters.biofuel_share_reference_years_values = [0.0, 4.8, 24.0, 35.0]
             process3.parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0]
-        if Liste_des_widgets3[5].value:
+        if Liste_des_widgets3[5].value and not Liste_des_widgets1[2]:
             process3.parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0]
         if Liste_des_widgets3[6].value:
             process3.parameters.load_factor_end_year = 90
