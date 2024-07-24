@@ -427,7 +427,7 @@ def compute_process2(Liste_des_widgets2):
         if Liste_des_widgets2[4].value:
             process2.parameters.biofuel_share_reference_years_values = [0.0, 4.8, 24.0, 35.0]
             process2.parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0]
-        if Liste_des_widgets2[5].value and not Liste_des_widgets1[2]:
+        if Liste_des_widgets2[5].value and not Liste_des_widgets2[2]:
             process2.parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0]
         if Liste_des_widgets2[6].value:
             process2.parameters.load_factor_end_year = 90
@@ -573,7 +573,7 @@ def compute_process3(Liste_des_widgets3):
         if Liste_des_widgets3[4].value:
             process3.parameters.biofuel_share_reference_years_values = [0.0, 4.8, 24.0, 35.0]
             process3.parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0]
-        if Liste_des_widgets3[5].value and not Liste_des_widgets1[2]:
+        if Liste_des_widgets3[5].value and not Liste_des_widgets3[2]:
             process3.parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0]
         if Liste_des_widgets3[6].value:
             process3.parameters.load_factor_end_year = 90

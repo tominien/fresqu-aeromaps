@@ -1,7 +1,7 @@
 
 import bqplot as bq
 import numpy as np 
-from bqplot import LinearScale, Lines, Axis, Figure, ColorScale
+from bqplot import LinearScale, Lines, Axis, Figure, ColorScale, OrdinalScale, Bars
 sc_x = LinearScale()
 sc_y = LinearScale()
 sc_col = ColorScale(colors=["Black","Blue", "Yellow","Orange","Green","Magenta","Red"])
@@ -54,4 +54,66 @@ def plot_traj(process_data):
     
 
     return [line,line_h,line_p]
+    
+categories = ["Climate\n(Total)","Climate\n(CO₂)","Biomass","Electricity",]
+x_ord = OrdinalScale()
+y_sc = LinearScale()
 
+def plot_multi(process_data):
+    parameters = process_data["float_inputs"]
+    df = process_data["vector_outputs"]
+    df_climate = process_data["climate_outputs"]
+    float_outputs = process_data["float_outputs"]
+    years = process_data["years"]["full_years"]
+    historic_years = process_data["years"]["historic_years"]
+    prospective_years = process_data["years"]["prospective_years"]
+
+    # Carbon budget
+    gross_carbon_budget = float(float_outputs["gross_carbon_budget_2050"])
+    aviation_carbon_budget = float(float_outputs["aviation_carbon_budget"])
+    cumulative_co2_emissions = float(df.loc[2050, "cumulative_co2_emissions"])
+
+    # Biomass
+    available_biomass_total = float_outputs["available_biomass_total"]
+    aviation_available_biomass = float_outputs["aviation_available_biomass"]
+    biomass_consumption_end_year = float_outputs["biomass_consumption_end_year"]
+
+    # Electricity
+    available_electricity_total = parameters["available_electricity"]
+    aviation_available_electricity = float_outputs["aviation_available_electricity"]
+    electricity_consumption_end_year = float_outputs["electricity_consumption_end_year"]
+
+    # Effective radiative forcing
+    equivalent_gross_carbon_budget = float(float_outputs["equivalent_gross_carbon_budget_2050"])
+    aviation_equivalent_carbon_budget = float(float_outputs["aviation_equivalent_carbon_budget"])
+    cumulative_total_equivalent_emissions = float(df_climate.loc[2050, "cumulative_total_equivalent_emissions"])
+
+    budgets = [
+        aviation_equivalent_carbon_budget / equivalent_gross_carbon_budget * 100,
+        aviation_carbon_budget / gross_carbon_budget * 100,
+        aviation_available_biomass / available_biomass_total * 100,
+        aviation_available_electricity / available_electricity_total * 100,]
+
+    consumptions = [
+        np.max([cumulative_total_equivalent_emissions / equivalent_gross_carbon_budget * 100, 0]),
+        cumulative_co2_emissions / gross_carbon_budget * 100,
+        biomass_consumption_end_year / available_biomass_total * 100,
+        electricity_consumption_end_year / available_electricity_total * 100,]
+
+    cons = Bars(x=categories, 
+            y=consumptions, 
+            scales={"x": x_ord, "y": y_sc},
+            opacities=[1]*4,
+            colors=["Orange"]*4,
+           )
+
+    budg = Bars(x=categories, 
+                y=budgets, 
+                scales={"x": x_ord, "y": y_sc},
+                opacities=[1]*4,
+                colors=["rgba(255,255,255,0)"]*4,
+                stroke="Green",
+                stroke_width=6,
+               )
+
+    return [cons,budg]
