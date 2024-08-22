@@ -1,0 +1,1 @@
+Ce repository est celui d'une extension de la Fresqu'aéro, atelier de sensibilisation à l'environnement dans le secteur aéronautique. Ce repo héberge un outil de simulation basé sur AeroMAPS, et est activé au moyen d'un Binder.
