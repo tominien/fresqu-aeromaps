@@ -71,7 +71,7 @@ def init_process_ref():
     # Aircraft fleet and operation evolution - Operations
 
     ## Values for setting the logistic function
-    process_ref.parameters.operations_final_gain = 8.0  # [%]
+    process_ref.parameters.operations_final_gain = 5.0  # [%]
     process_ref.parameters.operations_start_year = 2025
     process_ref.parameters.operations_duration = 25.0
 
@@ -188,7 +188,7 @@ def compute_process1(Liste_des_widgets1):
     # Aircraft fleet and operation evolution - Operations
 
     ## Values for setting the logistic function
-    process1.parameters.operations_final_gain = 8.0  # [%]
+    process1.parameters.operations_final_gain = 5.0  # [%]
     process1.parameters.operations_start_year = 2025
     process1.parameters.operations_duration = 25.0
 
@@ -275,13 +275,13 @@ def compute_process1(Liste_des_widgets1):
         if Liste_des_widgets1[5].value:
             process1.parameters.cagr_passenger_short_range_reference_periods_values = [1.0, 1.0, 1.0]
         if Liste_des_widgets1[2].value:
-            process1.parameters.cagr_passenger_medium_range_reference_periods_values = [2.0]
-            process1.parameters.cagr_passenger_long_range_reference_periods_values = [2.0]
-            process1.parameters.cagr_freight_reference_periods_values = [2.0]
+            process1.parameters.cagr_passenger_medium_range_reference_periods_values = [1.5]
+            process1.parameters.cagr_passenger_long_range_reference_periods_values = [1.5]
+            process1.parameters.cagr_freight_reference_periods_values = [1.5]
             if Liste_des_widgets1[5].value:
                 process1.parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0]
         if Liste_des_widgets1[3].value:
-            process1.parameters.residual_carbon_offset_share_reference_years_values = [0.0, 0.0, 20.0, 20.0]
+            process1.parameters.residual_carbon_offset_share_reference_years_values = [0.0, 0.0, 10.0, 10.0]
         if Liste_des_widgets1[4].value:
             process1.parameters.biofuel_share_reference_years_values = [0.0, 4.8, 24.0, 35.0]
             process1.parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0]
@@ -346,7 +346,7 @@ def compute_process2(Liste_des_widgets2):
     # Aircraft fleet and operation evolution - Operations
 
     ## Values for setting the logistic function
-    process2.parameters.operations_final_gain = 8.0  # [%]
+    process2.parameters.operations_final_gain = 5.0  # [%]
     process2.parameters.operations_start_year = 2025
     process2.parameters.operations_duration = 25.0
 
@@ -422,13 +422,13 @@ def compute_process2(Liste_des_widgets2):
         if Liste_des_widgets2[5].value:
             process2.parameters.cagr_passenger_short_range_reference_periods_values = [1.0, 1.0, 1.0]
         if Liste_des_widgets2[2].value:
-            process2.parameters.cagr_passenger_medium_range_reference_periods_values = [2.0]
-            process2.parameters.cagr_passenger_long_range_reference_periods_values = [2.0]
-            process2.parameters.cagr_freight_reference_periods_values = [2.0]
+            process2.parameters.cagr_passenger_medium_range_reference_periods_values = [1.5]
+            process2.parameters.cagr_passenger_long_range_reference_periods_values = [1.5]
+            process2.parameters.cagr_freight_reference_periods_values = [1.5]
             if Liste_des_widgets2[5].value:
                 process2.parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0]        
         if Liste_des_widgets2[3].value:
-            process2.parameters.residual_carbon_offset_share_reference_years_values = [0.0, 0.0, 20.0, 20.0]
+            process2.parameters.residual_carbon_offset_share_reference_years_values = [0.0, 0.0, 10.0, 10.0]
         if Liste_des_widgets2[4].value:
             process2.parameters.biofuel_share_reference_years_values = [0.0, 4.8, 24.0, 35.0]
             process2.parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0]
@@ -490,7 +490,7 @@ def compute_process3(Liste_des_widgets3):
     # Aircraft fleet and operation evolution - Operations
 
     ## Values for setting the logistic function
-    process3.parameters.operations_final_gain = 8.0  # [%]
+    process3.parameters.operations_final_gain = 5.0  # [%]
     process3.parameters.operations_start_year = 2025
     process3.parameters.operations_duration = 25.0
 
@@ -565,13 +565,13 @@ def compute_process3(Liste_des_widgets3):
         if Liste_des_widgets3[5].value:
             process3.parameters.cagr_passenger_short_range_reference_periods_values = [1.0, 1.0, 1.0]
         if Liste_des_widgets3[2].value:
-            process3.parameters.cagr_passenger_medium_range_reference_periods_values = [2.0]
-            process3.parameters.cagr_passenger_long_range_reference_periods_values = [2.0]
-            process3.parameters.cagr_freight_reference_periods_values = [2.0]
+            process3.parameters.cagr_passenger_medium_range_reference_periods_values = [1.5]
+            process3.parameters.cagr_passenger_long_range_reference_periods_values = [1.5]
+            process3.parameters.cagr_freight_reference_periods_values = [1.5]
             if Liste_des_widgets3[5].value:
                 process3.parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0]
         if Liste_des_widgets3[3].value:
-            process3.parameters.residual_carbon_offset_share_reference_years_values = [0.0, 0.0, 20.0, 20.0]
+            process3.parameters.residual_carbon_offset_share_reference_years_values = [0.0, 0.0, 10.0, 10.0]
         if Liste_des_widgets3[4].value:
             process3.parameters.biofuel_share_reference_years_values = [0.0, 4.8, 24.0, 35.0]
             process3.parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0]
