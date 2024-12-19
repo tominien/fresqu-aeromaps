@@ -1,7 +1,7 @@
 #Fichier de setup des fonctions process : initialisation de la plupart des variables du modèle aeroMAPS, et fonctions de décision et de recalcul des modèles selon les choix de cartes.
 #Toutes les fonctions ci-dessous retournent les datas issues du calcul par aeroMAPS
 
-
+#import des librairies nécessaires, toutes issues d'AeroMAPS
 from aeromaps import create_process
 from aeromaps.core.models import (
     models_traffic,
@@ -14,6 +14,8 @@ from aeromaps.core.models import (
     models_costs_top_down_specific,
     models_operation_cost,
 )
+
+#création des modèles
 models = {
     "models_traffic": models_traffic,
     "models_efficiency_top_down": models_efficiency_top_down,
@@ -25,6 +27,9 @@ models = {
     "models_costs_top_down_specific": models_costs_top_down_specific,
     "models_operation_cost": models_operation_cost,
 }
+
+##La focntion ci-dessous et toutes les fonction en compute_ suivantes sont des fonctions d'initalisation des variables des modèles, puis le calcul des datas de sortie. Cela permet d'alléger le code de run_graph_v3 car l'initialisation des variables est très moche.
+#les fonctions compute_ finissent par une chaîne de if pour prendre en compte le choix des joueurs au travers des widgets
 
 def init_process_ref():
     
@@ -143,6 +148,7 @@ def init_process_ref():
     process_ref.compute()
     
     return process_ref.data
+
 
 def compute_process1(Liste_des_widgets1):
     process1 = create_process(models=models)

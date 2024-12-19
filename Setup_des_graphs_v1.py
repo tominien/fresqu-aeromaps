@@ -1,3 +1,5 @@
+###Fichier qui sera appelé par run_graph_3 et qui sert à avoir des fon,c
+
 
 import bqplot as bq
 import numpy as np 
@@ -6,9 +8,9 @@ sc_x = LinearScale()
 sc_y = LinearScale()
 sc_col = ColorScale(colors=["Black","Blue", "Yellow","Orange","Green","Magenta","Red"])
 
+##fonction de tracé du graph des émissions annuelles qui dépend de process_data, qui sera calculé dans run_graph_3 en fonciton des widgets
 def plot_traj(process_data):
-    
-
+    #séparation des différents types de data
     df = process_data["vector_outputs"]
     df_climate = process_data["climate_outputs"]
     years = process_data["years"]["full_years"]
@@ -55,10 +57,12 @@ def plot_traj(process_data):
 
     return [line,line_h,line_p]
     
+#initialisation des axes pour le graph multi-disciplinaire
 categories = ["Climat\n(Total)","Climat\n(CO₂)","Biomasse","Electricité"]
 x_ord = OrdinalScale()
 y_sc = LinearScale()
 
+##fonction de tracé du graph multi-disciplinaire 
 def plot_multi(process_data):
     parameters = process_data["float_inputs"]
     df = process_data["vector_outputs"]
