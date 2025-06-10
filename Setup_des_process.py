@@ -3,6 +3,7 @@
 
 #import des librairies nécessaires, toutes issues d'AeroMAPS
 from aeromaps import create_process
+from aeromaps.core.process import AeroMAPSProcess
 from aeromaps.core.models import (
     models_traffic,
     models_efficiency_top_down,
@@ -33,7 +34,7 @@ models = {
 
 def init_process_ref():
     
-    process_ref = create_process(models=models)
+    process_ref: AeroMAPSProcess = create_process(models=models)
     # Scénario de référence
 
     # Air traffic evolution
@@ -596,10 +597,3 @@ def compute_process3(Liste_des_widgets3):
 
     process3.compute()
     return process3.data
-
-
-
-
-
-
-	
