@@ -1,17 +1,25 @@
 # Fichier qui sera appelé par "run_graph_v3.ipynb" et qui sert à initialiser les graphes.
 
-from bqplot import LinearScale, Lines, ColorScale, OrdinalScale
+from typing import Any, Dict, List
+from bqplot import LinearScale, Lines, ColorScale
 
 
 
 
-sc_x = LinearScale()
-sc_y = LinearScale()
-sc_col = ColorScale(colors=["Black","Blue", "Yellow","Orange","Green","Magenta","Red"])
+def plot_traj(process_data : Dict[str, Any]) -> List[Lines]:
+    """
+    Function that plots the annual CO₂ emissions graph, based on the data from `process_data`.
 
+    Arguments :
+        - `process_data (Dict[str, Any])` : A dictionary containing the processed data by AeroMAPS.
+    Returns :
+        - `List[Lines]` : A list of Lines objects representing the different trajectories of CO₂ emissions.
+    """
+    # Constantes pour les axes :
+    sc_x = LinearScale()
+    sc_y = LinearScale()
+    sc_col = ColorScale(colors = ["Black", "Blue", "Yellow", "Orange", "Green", "Magenta", "Red"])
 
-# Fonction de tracé du graphe des émissions annuelles (qui dépend de process_data, qui sera calculé dans "run_graph_v3.ipynb" en fonciton des widgets) :
-def plot_traj(process_data):
     # Séparation des différents types de données :
     df = process_data["vector_outputs"]
     df_climate = process_data["climate_outputs"]
@@ -59,14 +67,16 @@ def plot_traj(process_data):
     return [line, line_h, line_p]
 
 
-# Initialisation des axes pour le graphe multi-disciplinaire :
-categories = ["Climat\n(Total)","Climat\n(CO₂)","Biomasse","Electricité"]
-x_ord = OrdinalScale()
-y_sc = LinearScale()
-
-
 # Fonction de tracé du graphe multi-disciplinaire :
-def plot_multi(process_data):
+def plot_multi(process_data : Dict[str, Any]) -> List[List[float]]:
+    """
+    Function that plots the multi-disciplinary graph, based on the data from `process_data`.
+
+    Arguments :
+        - `process_data (Dict[str, Any])` : A dictionary containing the processed data by AeroMAPS.
+    Returns :
+        - `List[List[float]]` : A list containing two lists, the first for consumptions and the second for budgets.
+    """
     parameters = process_data["float_inputs"]
     df = process_data["vector_outputs"]
     df_climate = process_data["climate_outputs"]

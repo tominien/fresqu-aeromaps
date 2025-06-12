@@ -195,5 +195,5 @@ cython_debug/
 .cursorindexingignore
 
 # Local folder :
-.DO_NOT_COMMIT
-DO_NOT_COMMIT/
+.local_folder
+local_folder/
