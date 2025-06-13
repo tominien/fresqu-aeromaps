@@ -6,7 +6,7 @@ from bqplot import LinearScale, Lines, ColorScale
 
 
 
-def plot_traj(process_data : Dict[str, Any]) -> List[Lines]:
+def plot_traj(process_data: Dict[str, Any]) -> List[Lines]:
     """
     Function that plots the annual CO₂ emissions graph, based on the data from `process_data`.
 
@@ -68,7 +68,7 @@ def plot_traj(process_data : Dict[str, Any]) -> List[Lines]:
 
 
 # Fonction de tracé du graphe multi-disciplinaire :
-def plot_multi(process_data : Dict[str, Any]) -> List[List[float]]:
+def plot_multi(process_data: Dict[str, Any]) -> List[List[float]]:
     """
     Function that plots the multi-disciplinary graph, based on the data from `process_data`.
 
@@ -81,9 +81,6 @@ def plot_multi(process_data : Dict[str, Any]) -> List[List[float]]:
     df = process_data["vector_outputs"]
     df_climate = process_data["climate_outputs"]
     float_outputs = process_data["float_outputs"]
-    years = process_data["years"]["full_years"]                    # Non-utilisé pour le moment.
-    historic_years = process_data["years"]["historic_years"]       # Non-utilisé pour le moment.
-    prospective_years = process_data["years"]["prospective_years"] # Non-utilisé pour le moment.
 
     # Budget carbone :
     gross_carbon_budget = float(float_outputs["gross_carbon_budget_2050"])

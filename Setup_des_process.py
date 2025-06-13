@@ -41,7 +41,7 @@ def create_default_models() -> Dict[str, Any]:
     }
 
 
-def compute_process(widgets : Optional[List[Checkbox]] = None) -> Dict[str, Any]:
+def compute_process(widgets: Optional[List[Checkbox]] = None) -> Dict[str, Any]:
     """
     Initialize the AeroMAPS process with default parameters and compute the results.
     This function sets the parameters for the AeroMAPS process, including :

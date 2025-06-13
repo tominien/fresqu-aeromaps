@@ -1,9 +1,135 @@
+from typing import Any, Dict, List, Optional
+from pandas import DataFrame
 from ipywidgets import Checkbox, VBox, Button, Layout, AppLayout, HTML, GridspecLayout
 from bqplot import LinearScale, Lines, Axis, Figure, ColorScale, Bars, OrdinalScale
 from Setup_des_graphs_v1 import plot_multi
 from Setup_des_process import compute_process
 
 
+
+
+def initialize_figure(
+        process_data: Dict[str, Any],
+        figure_title: str,
+        color_palette: Optional[List[str]] = None
+    ) -> Figure:
+    """
+    Initialise un graphique des "émissions annuelles" avec les valeurs par défaut.
+    """
+    # Récupération des données de référence :
+    DF_vector_outputs: DataFrame  = process_data["vector_outputs"]
+    DF_climate_outputs: DataFrame = process_data["climate_outputs"]
+    years: List[int]              = process_data["years"]["full_years"]        # Liste d'entiers allant de 2000 à 2050.
+    historic_years: List[int]     = process_data["years"]["historic_years"]    # Liste d'entiers allant de 2000 à 2019.
+    prospective_years: List[int]  = process_data["years"]["prospective_years"] # Liste d'entiers allant de 2019 à 2050.
+
+    # Paramétrage de la palette de couleurs :
+    default_palette = ["#000000", "#1f77b4", "#ff7f0e", "#2ca02c", "#8c564b", "#9467bd", "#d62728"]
+    palette = color_palette if color_palette and len(color_palette) == len(default_palette) else default_palette
+    color_scale = ColorScale(colors = palette)
+
+    # Paramétrage des axes :
+    x_scale = LinearScale()
+    y_scale = LinearScale()
+    x_axis = Axis(
+        scale = x_scale,
+        num_ticks = 6,
+        label = "Années",
+        label_offset = "40px"
+    )
+    y_axis = Axis(
+        scale = y_scale,
+        orientation = "vertical",
+        label = "Emissions de CO2, en Mt",
+        label_offset = "40px"
+    )
+
+    # Tracé des émissions historiques (ligne noire allant de 2000 à 2019) :
+    historic_line = Lines(
+        x = historic_years,
+        y = DF_climate_outputs.loc[historic_years, "co2_emissions"],
+        color = [0],
+        scales = {"x": x_scale, "y": y_scale, "color": color_scale}
+    )
+
+    # Tracé des émissions prospectives (lignes allant de 2019 à 2050 : noir = "Business as usual", rouge = "Emissions restantes après application des aspects") :
+    prospective_y_lines = [
+        DF_climate_outputs.loc[prospective_years, "co2_emissions"] - DF_vector_outputs.loc[prospective_years, "carbon_offset"],
+        DF_vector_outputs.loc[prospective_years, "co2_emissions_2019technology_baseline3"]
+    ]
+    prospective_lines = Lines(
+        x = prospective_years,
+        y = prospective_y_lines,
+        color = [6, 0],
+        scales = {"x": x_scale, "y": y_scale, "color": color_scale},
+        labels = [
+            "Emissions restantes",
+            "Historique (2000-2019) / Business as usual (2019-2050)"
+        ],
+        display_legend = True
+    )
+
+    # Tracé des zones associées à chaque aspect permettant de réduire les émissions :
+    aspects_y_areas = [
+        DF_vector_outputs.loc[years, "co2_emissions_2019technology_baseline3"],
+        DF_vector_outputs.loc[years, "co2_emissions_2019technology"],
+        DF_vector_outputs.loc[years, "co2_emissions_including_aircraft_efficiency"],
+        DF_vector_outputs.loc[years, "co2_emissions_including_load_factor"],
+        DF_vector_outputs.loc[years, "co2_emissions_including_energy"],
+    ]
+    aspects_colors_indices = [1, 2, 3, 4, 5]
+    aspects_areas = Lines(
+        x = years,
+        y = aspects_y_areas,
+        color = aspects_colors_indices,
+        stroke_width = 0,
+        fill = "between",
+        fill_colors = [palette[i] for i in aspects_colors_indices],
+        fill_opacities = [0.3] * len(aspects_y_areas),
+        labels = [
+            "Changement de la demande",
+            "Efficacité technologique",
+            "Opérations en vol",
+            "Energies alternatives",
+            "Compensation carbone"
+        ],
+        display_legend = True,
+        scales={"x": x_scale, "y": y_scale, "color": color_scale},
+    )
+
+    # Création de la figure avec tous les tracés (lignes et aires) et les axes :
+    figure = Figure(
+        marks = [historic_line, prospective_lines, aspects_areas],
+        axes = [x_axis, y_axis],
+        title = figure_title,
+        animation_duration = 1000,
+        legend_location = "top-left",
+        legend_style = {"stroke-width": 0}
+    )
+    return figure
+
+
+"""
+Etape de refactorisation du code :
+    - Mettre à jour le Trello avec les tâches suivantes (et celles déjà faîtes !).
+    - Ce qu'il reste à faire (dans ce fichier) :
+        - Finir de factoriser `run_graph_v3()`.
+        - Mettre sous forme de classe les graphiques `fig_n` et `bar_n` pour chaque groupe.
+        - Faire fonctionner de nouveau le bouton "Calculer" pour mettre à jour les graphiques.
+        - Retravailler l'interface (positionnement des widgets, des graphiques, etc...).
+        - Ajouter des commentaires et de la documentation.
+    - Ce qu'il reste à faire (en dehors de ce fichier) :
+        - Refactoriser tout le code nouvellement factorisé (créer un agencement BEAUCOUP plus optimal, quitte à coder de nouveau certaines parties), en :
+            - Créant, rennomant et supprimant les fichiers actuels.
+            - Créant des dossiers.
+            - Renommer les CLASSES, FONCTIONS et VARIABLES.
+            - Ecrivant des commentaires plus précis.
+            - Ext...
+        - Supprimer le fichier `temp.ipynb` lorsqu'on aura fini la refactorisation du code.
+        - Ajouter Docker.
+        - Tester un déploiment du code sur `onready.com` pour vérifier que tout fonctionne correctement (si non, pleurer).
+Fin de l'étape de refactorisation du code.
+"""
 
 
 def run_graph_v3():
@@ -16,7 +142,6 @@ def run_graph_v3():
     Liste_des_widgets1 = []
     Liste_des_widgets2 = []
     Liste_des_widgets3 = []
-    x_ans = [2000, 2010, 2020, 2030, 2040, 2050]
 
     #initialisation des process avec les hypothèses du scénario de référence pour pouvoir tracer les graphiques.
     #d'où la nécessité d'initaliser les listes de widgets ci-dessus
@@ -25,203 +150,11 @@ def run_graph_v3():
     process2_data = compute_process(Liste_des_widgets2)
     process3_data = compute_process(Liste_des_widgets3)
 
-    #import des valeurs pour les différents axes du graphique
-    years = process_ref_data["years"]["full_years"]
-    historic_years = process_ref_data["years"]["historic_years"]
-    prospective_years = process_ref_data["years"]["prospective_years"]
-
-    #paramétrage des axes.
-    sc_x = LinearScale()
-    sc_y = LinearScale()
-    sc_col = ColorScale(colors = ["Black", "Blue", "Yellow", "Orange", "Green", "Magenta", "Red"])
-    ax_x = Axis(scale = sc_x, num_ticks = len(x_ans), tick_value = x_ans, label = "Années")
-    ax_y = Axis(scale = sc_y, orientation = "vertical", label = "Emissions de CO2, en Mt")
-
-    ##création du graphique des émissions annuelles
-
-    #paramétrage du tracé : attribution des couleurs, des légendes, des différentes lignes
-    df_ref = process_ref_data["vector_outputs"]
-    df_ref_climate = process_ref_data["climate_outputs"]
-    line_ref = Lines(
-        x = years,
-        y = [
-            df_ref.loc[years,"co2_emissions_2019technology_baseline3"],
-            df_ref["co2_emissions_2019technology"],
-            df_ref["co2_emissions_including_aircraft_efficiency"],
-            df_ref["co2_emissions_including_load_factor"],
-            df_ref["co2_emissions_including_energy"],
-            df_ref_climate.loc[years, "co2_emissions"] - df_ref.loc[years, "carbon_offset"]
-        ],
-        color = [1, 2, 3, 4, 5, 6],
-        stroke_width = 0,
-        fill = 'between',
-        fill_colors = ["Blue", "Yellow", "Orange", "Green", "Magenta"],
-        fill_opacities = [0.3, 0.3, 0.3, 0.3, 0.3],
-        labels = [
-            "Changement de la demande", "Efficacité technologique", "Opérations en vol", "Energies alternatives", "Compensation carbone", "Emission restantes"
-        ],
-        display_legend = True,
-        scales = {"x" : sc_x, "y" : sc_y, "color" : sc_col}
-    )
-
-    #tracé des émissions historiques, car les lignes précédentes n'étaient que pou rla prospective
-    line_ref_h = Lines(
-        x = historic_years,
-        y = df_ref_climate.loc[historic_years, "co2_emissions"],
-        color = [0],
-        scales = {"x" : sc_x, "y" : sc_y, "color" : sc_col}
-    )
-
-    #tracé de la ligne des émissions avec un scénario "business as usual" pour faire ressortir les émissions évitées
-    line_ref_p = Lines(
-        x = prospective_years,
-        y = [
-            df_ref_climate.loc[prospective_years, "co2_emissions"] - df_ref.loc[prospective_years, "carbon_offset"],
-            df_ref.loc[prospective_years,"co2_emissions_2019technology_baseline3"]
-        ],
-        color = [6, 0],
-        scales={"x" : sc_x, "y" : sc_y, "color" : sc_col}
-    )
-
-    #assemblages de tous les tracés précédents sur une même figure interactive
-    fig_ref = Figure(
-        marks = [line_ref, line_ref_h, line_ref_p],
-        axes = [ax_x, ax_y],
-        title = "Scénario de référence", 
-        animation_duration = 1000,
-        legend_location = "top-left",
-        legend_style = {'stroke-width': 0}
-    )
-
-    #reproduction de la création du tracé pour le premier groupe
-    df1 = process1_data["vector_outputs"]
-    df1_climate = process1_data["climate_outputs"]
-    line1 = Lines(
-        x = years,
-        y = [
-            df1.loc[years,"co2_emissions_2019technology_baseline3"],
-            df1["co2_emissions_2019technology"],
-            df1["co2_emissions_including_aircraft_efficiency"],
-            df1["co2_emissions_including_load_factor"],
-            df1["co2_emissions_including_energy"],
-            df1_climate.loc[years, "co2_emissions"] - df1.loc[years, "carbon_offset"]
-        ],
-        color = [1, 2, 3, 4, 5, 6],
-        stroke_width = 0,
-        fill = 'between',
-        fill_colors = ["Blue", "Yellow", "Orange", "Green", "Magenta"],
-        fill_opacities = [0.3, 0.3, 0.3, 0.3, 0.3],
-        labels = [
-            "Changement de la demande", "Efficacité technologique", "Opérations en vol", "Energies alternatives", "Compensation carbone", "Emission restantes"
-        ],
-        display_legend = True,
-        scales={"x" : sc_x, "y" : sc_y, "color" : sc_col}
-    )
-
-    line1_h = Lines(
-        x = historic_years,
-        y = df1_climate.loc[historic_years, "co2_emissions"],
-        color = [0],
-        scales = {"x" : sc_x, "y" : sc_y, "color" : sc_col}
-    )
-
-    line1_p = Lines(
-        x = prospective_years,
-        y = [
-            df1_climate.loc[prospective_years, "co2_emissions"] - df1.loc[prospective_years, "carbon_offset"],
-            df1.loc[prospective_years,"co2_emissions_2019technology_baseline3"]
-        ],
-        color = [6, 0],
-        scales = {"x" : sc_x, "y" : sc_y, "color" : sc_col}
-    )
-
-    fig1 = Figure(
-        marks = [line1, line1_h, line1_p],
-        axes = [ax_x, ax_y],
-        title = "Scénario du groupe 1",
-        animation_duration = 1000,
-        legend_location = "top-left",
-        legend_style = {'stroke-width': 0}
-    )
-
-    #reproduction de la création du tracé pour le deuxième groupe
-    df2 = process2_data["vector_outputs"]
-    df2_climate = process2_data["climate_outputs"]
-    line2 = Lines(x=years, 
-                y=[df2.loc[years,"co2_emissions_2019technology_baseline3"],
-                    df2["co2_emissions_2019technology"],
-                    df2["co2_emissions_including_aircraft_efficiency"],
-                    df2["co2_emissions_including_load_factor"],
-                    df2["co2_emissions_including_energy"],
-                    df2_climate.loc[years, "co2_emissions"] - df2.loc[years, "carbon_offset"]],
-                color=[1,2,3,4,5,6],
-                stroke_width=0,
-                fill='between',
-                fill_colors=["Blue","Yellow","Orange","Green","Magenta"],
-                fill_opacities=[0.3]*5,
-                labels=["Changement de la demande","Efficacité technologique","Opérations en vol",
-                        "Energies alternatives","Compensation carbone","Emission restantes"],
-                display_legend=True,
-                scales={"x": sc_x, "y": sc_y, "color" : sc_col},
-    )
-
-    line2_h = Lines(x=historic_years, 
-                y=df2_climate.loc[historic_years, "co2_emissions"],
-                color=[0], 
-                scales={"x": sc_x, "y": sc_y, "color" : sc_col}
-    )
-
-    line2_p = Lines(x=prospective_years, 
-                y=[df2_climate.loc[prospective_years, "co2_emissions"] - df2.loc[prospective_years, "carbon_offset"],
-                    df2.loc[prospective_years,"co2_emissions_2019technology_baseline3"]],
-                color=[6,0], 
-                scales={"x": sc_x, "y": sc_y, "color" : sc_col},
-    )
-    fig2=Figure(marks=[line2,line2_h,line2_p], 
-                axes=[ax_x, ax_y],
-                title="Scénario du groupe 2", 
-                animation_duration = 1000,
-                legend_location="top-left",
-                legend_style = {'stroke-width': 0})
-
-    #reproduction de la création du tracé pour le troisième groupe
-    df3 = process3_data["vector_outputs"]
-    df3_climate = process3_data["climate_outputs"]
-    line3 = Lines(x=years, 
-                y=[df3.loc[years,"co2_emissions_2019technology_baseline3"],
-                    df3["co2_emissions_2019technology"],
-                    df3["co2_emissions_including_aircraft_efficiency"],
-                    df3["co2_emissions_including_load_factor"],
-                    df3["co2_emissions_including_energy"],
-                    df3_climate.loc[years, "co2_emissions"] - df3.loc[years, "carbon_offset"]],
-                color=[1,2,3,4,5,6],
-                stroke_width=0,
-                fill='between',
-                fill_colors=["Blue","Yellow","Orange","Green","Magenta"],
-                fill_opacities=[0.3]*5,
-                labels=["Changement de la demande","Efficacité technologique","Opérations en vol",
-                        "Energies alternatives","Compensation carbone","Emission restantes"],
-                display_legend=True,
-                scales={"x": sc_x, "y": sc_y, "color" : sc_col},
-    )
-
-    line3_h = Lines(x=historic_years, 
-                y=df3_climate.loc[historic_years, "co2_emissions"],
-                color=[0], 
-                scales={"x": sc_x, "y": sc_y, "color" : sc_col}
-    )
-
-    line3_p = Lines(x=prospective_years, 
-                y=[df3_climate.loc[prospective_years, "co2_emissions"] - df3.loc[prospective_years, "carbon_offset"],
-                    df3.loc[prospective_years,"co2_emissions_2019technology_baseline3"]],
-                color=[6,0], 
-                scales={"x": sc_x, "y": sc_y, "color" : sc_col},
-    )
-
-    fig3=Figure(marks=[line3,line3_h,line3_p], 
-                axes=[ax_x, ax_y],
-                title= "Scénario du groupe 3",
-                animation_duration = 1000,legend_location="top-left",legend_style = {'stroke-width': 0})
+    #...
+    fig_ref = initialize_figure(process_ref_data, "Scénario de référence")
+    fig1 = initialize_figure(process1_data, "Scénario du groupe 1")
+    fig2 = initialize_figure(process2_data, "Scénario du groupe 2")
+    fig3 = initialize_figure(process3_data, "Scénario du groupe 3")
 
     """
     Création du graphique multi-disciplinaire
@@ -485,10 +418,10 @@ def run_graph_v3():
     """
 
     grid = GridspecLayout(9, 2, grid_gap="5px")
-    grid[slice(0, 2), 0] = app_layout_ref
-    grid[slice(0, 2), 1] = app_layout1
-    grid[slice(2, 4), 0] = app_layout2
-    grid[slice(2, 4), 1] = app_layout3
+    grid[0, slice(0, 2)] = app_layout_ref
+    grid[1, slice(0, 2)] = app_layout1
+    grid[2, slice(0, 2)] = app_layout2
+    grid[3, slice(0, 2)] = app_layout3
     grid[4, slice(None)] = centre
     grid[slice(5, 7), 0] = bar_ref
     grid[slice(5, 7), 1] = bar1
