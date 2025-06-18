@@ -55,9 +55,10 @@ def compute_process(widgets: Optional[List[Checkbox]] = None) -> Dict[str, Any]:
     The function returns the computed data from the AeroMAPS process.
 
     Arguments :
-        - `widgets (list[Checkbox], optional)` : List of widgets to modify the parameters. Defaults to [].
+    - `widgets (list[Checkbox], optional)` : List of widgets to modify the parameters. Defaults to [].
+
     Returns :
-        - `dict [str, Any]` : The computed data from the AeroMAPS process.
+    - `dict [str, Any]` : The computed data from the AeroMAPS process.
     """
     process: AeroMAPSProcess = create_process(models = create_default_models())
     parameters: Parameters = process.parameters

@@ -17,4 +17,4 @@ Vous trouverez ci-dessous une procédure d'installation simple, organisée par �
 3. Installer les dépendances du projet :
     - `pip install -r requirements.txt`
 4. Lancer le Jupyter Notebook :
-    - `jupyter notebook` *Si vous utilisez Visual Studio Code, veillez bien à choisir le Kernel correspondant à l'environnement `.venv` en haut à droit du notebook.*
+    - `jupyter notebook` *Si vous utilisez Visual Studio Code, veillez bien à choisir le Kernel correspondant à l'environnement `.venv` en haut à droite du notebook.*

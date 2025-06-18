@@ -11,9 +11,10 @@ def plot_traj(process_data: Dict[str, Any]) -> List[Lines]:
     Function that plots the annual CO₂ emissions graph, based on the data from `process_data`.
 
     Arguments :
-        - `process_data (Dict[str, Any])` : A dictionary containing the processed data by AeroMAPS.
+    - `process_data (Dict[str, Any])` : A dictionary containing the processed data by AeroMAPS.
+
     Returns :
-        - `List[Lines]` : A list of Lines objects representing the different trajectories of CO₂ emissions.
+    - `List[Lines]` : A list of Lines objects representing the different trajectories of CO₂ emissions.
     """
     # Constantes pour les axes :
     sc_x = LinearScale()
@@ -73,9 +74,10 @@ def plot_multi(process_data: Dict[str, Any]) -> List[List[float]]:
     Function that plots the multi-disciplinary graph, based on the data from `process_data`.
 
     Arguments :
-        - `process_data (Dict[str, Any])` : A dictionary containing the processed data by AeroMAPS.
+    - `process_data (Dict[str, Any])` : A dictionary containing the processed data by AeroMAPS.
+
     Returns :
-        - `List[List[float]]` : A list containing two lists, the first for consumptions and the second for budgets.
+    - `List[List[float]]` : A list containing two lists, the first for consumptions and the second for budgets.
     """
     parameters = process_data["float_inputs"]
     df = process_data["vector_outputs"]

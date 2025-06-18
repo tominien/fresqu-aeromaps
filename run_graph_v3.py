@@ -8,13 +8,21 @@ from Setup_des_process import compute_process
 
 
 
-def initialize_figure(
+def generate_prospective_scenario_figure(
         process_data: Dict[str, Any],
         figure_title: str,
         color_palette: Optional[List[str]] = None
     ) -> Figure:
     """
     Initialise un graphique des "émissions annuelles" avec les valeurs par défaut.
+
+    Arguments :
+    - `process_data (dict [str, Any])` : Les données récolté à partir d'AéroMaps, permettant de tracer les différentes courbes du graphe.
+    - `figure_title (str)` : Le titre du graphique généré.
+    - `color_palette (List[str], optional)` : La palette de couleurs à utiliser dans le graphique (doit posséder exactement 7 couleurs).
+
+    Returns :
+    - `Figure` : Le graphique généré, à partir des données de `process_data`.
     """
     # Récupération des données de référence :
     DF_vector_outputs: DataFrame  = process_data["vector_outputs"]
@@ -109,6 +117,25 @@ def initialize_figure(
     return figure
 
 
+def update_all_figures(_ : Button, temp_list_lists, temp_list_figures) -> None:
+    """
+    Fonction appelée par la méthode "on_click" du bouton "Calculer", permettant de mettre à jour les graphiques de simulation des scénarios prospectifs selon les critères choisis.
+
+    Arguments :
+    - `_ (ipywidgets.Button)` : L'instance du bouton effectuant cette fonction. Non-utilisée ici.
+    """
+    # Recompute every graph :
+    for i in range(6):
+        if i < 3 :
+            new_data = compute_process(temp_list_lists[i])
+            new_fig1 = generate_prospective_scenario_figure(new_data, temp_list_figures[i].title)
+            with temp_list_figures[i].hold_sync():
+                temp_list_figures[i].marks = new_fig1.marks
+        else :
+            ...
+
+
+
 """
 Etape de refactorisation du code :
     - Mettre à jour le Trello avec les tâches suivantes (et celles déjà faîtes !).
@@ -151,10 +178,10 @@ def run_graph_v3():
     process3_data = compute_process(Liste_des_widgets3)
 
     #...
-    fig_ref = initialize_figure(process_ref_data, "Scénario de référence")
-    fig1 = initialize_figure(process1_data, "Scénario du groupe 1")
-    fig2 = initialize_figure(process2_data, "Scénario du groupe 2")
-    fig3 = initialize_figure(process3_data, "Scénario du groupe 3")
+    fig_ref = generate_prospective_scenario_figure(process_ref_data, "Scénario de référence")
+    fig1 = generate_prospective_scenario_figure(process1_data, "Scénario du groupe 1")
+    fig2 = generate_prospective_scenario_figure(process2_data, "Scénario du groupe 2")
+    fig3 = generate_prospective_scenario_figure(process3_data, "Scénario du groupe 3")
 
     """
     Création du graphique multi-disciplinaire
@@ -361,7 +388,13 @@ def run_graph_v3():
                 ]
 
     #association de la fonction que l'on vient de définir au bouton update
-    Update_btn.on_click(on_btn_click)
+    Update_btn.on_click(
+        lambda button_instance: update_all_figures(
+            button_instance,
+            [Liste_des_widgets1, Liste_des_widgets2, Liste_des_widgets3],
+            [fig1, fig2, fig3]
+        )
+    )
 
     """
     Mise en forme des graphiques avec leurs cases à cocher à côté
