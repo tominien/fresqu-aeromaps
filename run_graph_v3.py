@@ -2,8 +2,9 @@ from typing import Any, Dict, List, Optional
 from pandas import DataFrame
 from ipywidgets import Checkbox, VBox, Button, Layout, AppLayout, HTML, GridspecLayout
 from bqplot import LinearScale, Lines, Axis, Figure, ColorScale, Bars, OrdinalScale
-from Setup_des_graphs_v1 import plot_multi
-from Setup_des_process import compute_process
+from Setup_des_graphs_v1 import plot_multi # Ne plot pas vraiment un graphe, renvoie juste les données nécessaires pour le graphe multi-disciplinaire.
+from src.core.crud_aspects import get_aspects, get_aspect_id
+from src.core.process_engine import ProcessEngine
 
 
 
@@ -117,22 +118,26 @@ def generate_prospective_scenario_figure(
     return figure
 
 
-def update_all_figures(_ : Button, temp_list_lists, temp_list_figures) -> None:
-    """
-    Fonction appelée par la méthode "on_click" du bouton "Calculer", permettant de mettre à jour les graphiques de simulation des scénarios prospectifs selon les critères choisis.
-
-    Arguments :
-    - `_ (ipywidgets.Button)` : L'instance du bouton effectuant cette fonction. Non-utilisée ici.
-    """
-    # Recompute every graph :
-    for i in range(6):
-        if i < 3 :
-            new_data = compute_process(temp_list_lists[i])
-            new_fig1 = generate_prospective_scenario_figure(new_data, temp_list_figures[i].title)
-            with temp_list_figures[i].hold_sync():
-                temp_list_figures[i].marks = new_fig1.marks
-        else :
-            ...
+def update_all_figures(
+    _btn: Button,
+    processes: List[ProcessEngine],
+    widget_lists: List[List[Checkbox]],
+    figures: List[Figure]
+) -> None:
+    for idx, engine in enumerate(processes):
+        # Lire l’état des widgets AU CLIC
+        aspect_ids = [
+            get_aspect_id(cb.description)
+            for cb in widget_lists[idx]
+            if getattr(cb, "value", False)
+        ]
+        # Recompute
+        new_data = engine.compute(aspect_ids)
+        # Nouveau jeu de marks
+        new_fig = generate_prospective_scenario_figure(new_data, figures[idx].title)
+        # MAJ atomique de la Figure
+        with figures[idx].hold_sync():
+            figures[idx].marks = new_fig.marks
 
 
 
@@ -172,10 +177,14 @@ def run_graph_v3():
 
     #initialisation des process avec les hypothèses du scénario de référence pour pouvoir tracer les graphiques.
     #d'où la nécessité d'initaliser les listes de widgets ci-dessus
-    process_ref_data = compute_process()
-    process1_data = compute_process(Liste_des_widgets1)
-    process2_data = compute_process(Liste_des_widgets2)
-    process3_data = compute_process(Liste_des_widgets3)
+    process_ref = ProcessEngine()
+    process1 = ProcessEngine()
+    process2 = ProcessEngine()
+    process3 = ProcessEngine()
+    process_ref_data = process_ref.compute()
+    process1_data = process1.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets1 if aspect in get_aspects()])
+    process2_data = process2.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets2 if aspect in get_aspects()])
+    process3_data = process3.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets3 if aspect in get_aspects()])
 
     #...
     fig_ref = generate_prospective_scenario_figure(process_ref_data, "Scénario de référence")
@@ -256,9 +265,7 @@ def run_graph_v3():
     """
 
     #Liste des cartes sélectionnables pour pouvoir nommer les cases à cocher
-    Liste_des_cartes=['Allouer un budget carbone','Réglementation et mesures économiques','Sobriété',
-                    'Compensation des émissions','Nouveaux vecteurs énergétiques','Report modal',
-                    'Efficacité des opérations','Technologie']
+    Liste_des_cartes = get_aspects()
 
     #création des 8 widgets par groupe en utilisant une boucle et la liste des cartes
     for carte in Liste_des_cartes :
@@ -307,7 +314,7 @@ def run_graph_v3():
     def on_btn_click(btn):
 
         #on utilise la fonction compute pour calculer les datas de sortie avec les paramètres changs par la liste de widgets
-        process1_data=compute_process(Liste_des_widgets1)
+        process1_data = process1.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets1 if aspect in get_aspects()])
         #on associe ensuite ces datas en plusieurs catégories pour pouvoir traiter chaque type de données correctement
         df1 = process1_data["vector_outputs"]
         df1_climate = process1_data["climate_outputs"]
@@ -338,7 +345,7 @@ def run_graph_v3():
         
         #on procède de même avec le graph du groupe 2 si la case a été cochée
         if mode_2_groupes.value or mode_3_groupes.value :        
-            process2_data=compute_process(Liste_des_widgets2)
+            process2_data = process2.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets2 if aspect in get_aspects()])
             df2 = process2_data["vector_outputs"]
             df2_climate = process2_data["climate_outputs"]
             float_outputs2 = process2_data["float_outputs"]
@@ -363,7 +370,7 @@ def run_graph_v3():
                 
         #on procède de même avec le graph du groupe 3 si la case a été cochée
         if mode_3_groupes.value :
-            process3_data=compute_process(Liste_des_widgets3)
+            process3_data = process3.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets3 if aspect in get_aspects()])
             df3 = process3_data["vector_outputs"]
             df3_climate = process3_data["climate_outputs"]
             float_outputs3 = process3_data["float_outputs"]
@@ -389,8 +396,9 @@ def run_graph_v3():
 
     #association de la fonction que l'on vient de définir au bouton update
     Update_btn.on_click(
-        lambda button_instance: update_all_figures(
-            button_instance,
+        lambda btn: update_all_figures(
+            btn,
+            [process1, process2, process3],
             [Liste_des_widgets1, Liste_des_widgets2, Liste_des_widgets3],
             [fig1, fig2, fig3]
         )

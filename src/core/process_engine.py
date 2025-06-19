@@ -1,66 +1,35 @@
-# Fichier de setup des processus de calcul des modèles aeroMAPS.
-# La fonction `compute_process()` initialise le processus AeroMAPS avec les paramètres par défaut et calcule les résultats :
-    # Si on ne passe pas de widgets, les paramètres par défaut sont utilisés (graphique de initial / de référence).
-    # Si on passe des widgets, les paramètres sont modifiés en fonction des valeurs des widgets.
-
 from typing import Any, Dict, List, Optional
+from functools import lru_cache
 from aeromaps import create_process
 from aeromaps.models.parameters import Parameters
 from aeromaps.core.process import AeroMAPSProcess
-from aeromaps.core.models import (
-    models_traffic,
-    models_efficiency_top_down,
-    models_energy_without_fuel_effect,
-    models_offset,
-    models_climate_simple_gwpstar,
-    models_sustainability,
-    models_energy_cost,
-    models_costs_top_down_specific,
-    models_operation_cost,
-)
-from ipywidgets import Checkbox
 
 
 
 
-def create_default_models() -> Dict[str, Any]:
-    """
-    Create a dictionary of default models.
-    This function is used to create the default models for the AeroMAPS process.
-    """
-    return {
-        "models_traffic": models_traffic,
-        "models_efficiency_top_down": models_efficiency_top_down,
-        "models_energy_without_fuel_effect": models_energy_without_fuel_effect,
-        "models_offset": models_offset,
-        "models_climate_simple_gwpstar": models_climate_simple_gwpstar,
-        "models_sustainability": models_sustainability,
-        "models_energy_cost": models_energy_cost,
-        "models_costs_top_down_specific": models_costs_top_down_specific,
-        "models_operation_cost": models_operation_cost,
-    }
-
-
-def compute_process(widgets: Optional[List[Checkbox]] = None) -> Dict[str, Any]:
+@lru_cache(maxsize = None)
+def compute_process(
+        process: AeroMAPSProcess,
+        aspects_ids: Optional[List[int]] = None
+    ) -> Dict[str, Any]:
     """
     Initialize the AeroMAPS process with default parameters and compute the results.
+
     This function sets the parameters for the AeroMAPS process, including :
-        - Air traffic evolution,
-        - Aircraft fleet and operation evolution,
-        - Aircraft energy,
-        - Carbon offset,
-        - Environmental limits,
-        - Allocation settings,
-        - And various environmental settings.
-    The function returns the computed data from the AeroMAPS process.
+    - Air traffic evolution,
+    - Aircraft fleet and operation evolution,
+    - Aircraft energy,
+    - Carbon offset,
+    - Environmental limits,
+    - Allocation settings,
+    - And various environmental settings.
 
-    Arguments :
-    - `widgets (list[Checkbox], optional)` : List of widgets to modify the parameters. Defaults to [].
+    #### Arguments :
+    - `aspects_ids (list[int], optional)` : List of aspects ids to apply to the process. Defaults to None (no aspects are applied <=> reference scenario).
 
-    Returns :
+    #### Returns :
     - `dict [str, Any]` : The computed data from the AeroMAPS process.
     """
-    process: AeroMAPSProcess = create_process(models = create_default_models())
     parameters: Parameters = process.parameters
 
     # Air traffic evolution :
@@ -167,24 +136,25 @@ def compute_process(widgets: Optional[List[Checkbox]] = None) -> Dict[str, Any]:
     parameters.carbon_offset_price_reference_years           = []
     parameters.carbon_offset_price_reference_years_values    = [5.0]
 
-    if widgets:
-        if widgets[2].value:
+    # Apply aspects if provided :
+    if aspects_ids:
+        if 2 in aspects_ids: # Sobriété
             parameters.cagr_passenger_medium_range_reference_periods_values = [1.5]
             parameters.cagr_passenger_long_range_reference_periods_values   = [1.5]
             parameters.cagr_freight_reference_periods_values                = [1.5]
-        if widgets[3].value:
+        if 3 in aspects_ids: # Compensation des émissions
             parameters.residual_carbon_offset_share_reference_years_values = [0.0, 0.0, 10.0, 10.0]
-        if widgets[4].value:
+        if 4 in aspects_ids: # Nouveaux vecteurs énergétiques
             parameters.biofuel_share_reference_years_values     = [0.0, 4.8, 24.0, 35.0]
             parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0]
-        if widgets[5].value:
-            parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0] if widgets[2].value else [1.0, 1.0, 1.0]
-        if widgets[6].value:
+        if 5 in aspects_ids: # Report modal
+            parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0] if 2 in aspects_ids else [1.0, 1.0, 1.0]
+        if 6 in aspects_ids: # Efficacité des opérations
             parameters.load_factor_end_year  = 90
             parameters.operations_final_gain = 10.0 # [%]
             parameters.operations_start_year = 2025
             parameters.operations_duration   = 25.0
-        if widgets[7].value:
+        if 7 in aspects_ids: # Technologie
             parameters.energy_per_ask_short_range_dropin_fuel_gain_reference_years_values  = [1.0]
             parameters.energy_per_ask_medium_range_dropin_fuel_gain_reference_years_values = [1.0]
             parameters.energy_per_ask_long_range_dropin_fuel_gain_reference_years_values   = [1.0]
@@ -194,3 +164,36 @@ def compute_process(widgets: Optional[List[Checkbox]] = None) -> Dict[str, Any]:
 
     process.compute()
     return process.data
+
+
+class ProcessEngine:
+    """
+    Engine for running an AeroMAPS simulation process from a reference scenario and chosen aspects.
+    """
+    def __init__(self) -> None:
+        """
+        Initialize the process engine with the given configuration.
+
+        #### Arguments :
+        - `configuration_file (str, optional)` : Path to the configuration file. Defaults to None.
+        - `models (list[str], optional)` : List of models to use. Defaults to None.
+        - `use_fleet_model (bool)` : Whether to use the fleet model. Defaults to False.
+        - `add_examples_aircraft_and_subcategory (bool)` : Whether to add example aircraft and subcategories. Defaults to True.
+        """
+        self.process: AeroMAPSProcess = create_process()
+
+
+    def compute(
+            self,
+            aspects_ids: Optional[List[int]] = None
+        ) -> Dict[str, Any]:
+        """
+        Compute the AeroMAPS process with the given aspects.
+
+        #### Arguments :
+        - `aspects_ids (list[int], optional)` : List of aspect IDs to apply to the process. Defaults to None (no aspects are applied <=> reference scenario).
+
+        #### Returns :
+        - `dict [str, Any]` : The computed data from the AeroMAPS process.
+        """
+        return compute_process(self.process, tuple(aspects_ids) if aspects_ids else None) # Converted to tuple for LRU cache compatibility
