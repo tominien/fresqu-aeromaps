@@ -140,125 +140,143 @@ def update_all_figures(
             figures[idx].marks = new_fig.marks
 
 
-
-"""
-Etape de refactorisation du code :
-    - Mettre à jour le Trello avec les tâches suivantes (et celles déjà faîtes !).
-    - Ce qu'il reste à faire (dans ce fichier) :
-        - Finir de factoriser `run_graph_v3()`.
-        - Mettre sous forme de classe les graphiques `fig_n` et `bar_n` pour chaque groupe.
-        - Faire fonctionner de nouveau le bouton "Calculer" pour mettre à jour les graphiques.
-        - Retravailler l'interface (positionnement des widgets, des graphiques, etc...).
-        - Ajouter des commentaires et de la documentation.
-    - Ce qu'il reste à faire (en dehors de ce fichier) :
-        - Refactoriser tout le code nouvellement factorisé (créer un agencement BEAUCOUP plus optimal, quitte à coder de nouveau certaines parties), en :
-            - Créant, rennomant et supprimant les fichiers actuels.
-            - Créant des dossiers.
-            - Renommer les CLASSES, FONCTIONS et VARIABLES.
-            - Ecrivant des commentaires plus précis.
-            - Ext...
-        - Supprimer le fichier `temp.ipynb` lorsqu'on aura fini la refactorisation du code.
-        - Ajouter Docker.
-        - Tester un déploiment du code sur `onready.com` pour vérifier que tout fonctionne correctement (si non, pleurer).
-Fin de l'étape de refactorisation du code.
-"""
-
-
 def run_graph_v3():
-    """
-    Section qui créé les graphiques d'émissions annuelles avec les valeurs par défaut, pour qu'ensuite une fonction viens les modifier.
-    """
-
-    #initialisation des listes qui serviront pour les widgets (qui sont en fait les boutons à cocher), 
-    #et de la liste qui sert d'abscisse dans le graph
+    # ...
     Liste_des_widgets1 = []
     Liste_des_widgets2 = []
     Liste_des_widgets3 = []
 
-    #initialisation des process avec les hypothèses du scénario de référence pour pouvoir tracer les graphiques.
-    #d'où la nécessité d'initaliser les listes de widgets ci-dessus
-    process_ref = ProcessEngine()
-    process1 = ProcessEngine()
-    process2 = ProcessEngine()
-    process3 = ProcessEngine()
-    process_ref_data = process_ref.compute()
-    process1_data = process1.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets1 if aspect in get_aspects()])
-    process2_data = process2.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets2 if aspect in get_aspects()])
-    process3_data = process3.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets3 if aspect in get_aspects()])
-
-    #...
-    fig_ref = generate_prospective_scenario_figure(process_ref_data, "Scénario de référence")
-    fig1 = generate_prospective_scenario_figure(process1_data, "Scénario du groupe 1")
-    fig2 = generate_prospective_scenario_figure(process2_data, "Scénario du groupe 2")
-    fig3 = generate_prospective_scenario_figure(process3_data, "Scénario du groupe 3")
+    # ...
+    process_reference = ProcessEngine()
+    process_1 = ProcessEngine()
+    process_2 = ProcessEngine()
+    process_3 = ProcessEngine()
+    process_reference_data = process_reference.compute()
+    process_1_data = process_1.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets1 if aspect in get_aspects()])
+    process_2_data = process_2.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets2 if aspect in get_aspects()])
+    process_3_data = process_3.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets3 if aspect in get_aspects()])
 
     """
-    Création du graphique multi-disciplinaire
+    Graphiques "Prospective Scenario" :
     """
+    ps_figure_reference = generate_prospective_scenario_figure(process_reference_data, "Scénario de référence")
+    ps_figure_1 = generate_prospective_scenario_figure(process_1_data, "Scénario du groupe 1")
+    ps_figure_2 = generate_prospective_scenario_figure(process_2_data, "Scénario du groupe 2")
+    ps_figure_3 = generate_prospective_scenario_figure(process_3_data, "Scénario du groupe 3")
 
-    #paramétrage des axes
+    """
+    Graphiques "Multidisciplinary" :
+    """
     x_ord = OrdinalScale()
     y_sc = LinearScale()
-    categories = ["ERF (CO₂ et non-CO₂)","Emissions de CO₂","Biomasse","Electricité"]
-    ax_x = Axis(scale=x_ord, tick_style={'font-weight': 'bold'})
-    ax_y = Axis(scale=y_sc, tick_format="0.2f", orientation="vertical",label="Part du budget mondial (en %)")
+    categories = [
+        "ERF (CO₂ et non-CO₂)",
+        "Emissions de CO₂",
+        "Biomasse",
+        "Electricité"
+    ]
+    ax_x = Axis(
+        scale = x_ord,
+        tick_style = {'font-weight': 'bold'}
+    )
+    ax_y = Axis(
+        scale = y_sc,
+        tick_format = "0.2f",
+        orientation = "vertical",
+        label = "Part du budget mondial (en %)"
+    )
 
-    #création du graphique de référence
-    [consumptions_ref,budgets_ref]=plot_multi(process_ref_data)
+    # Reference graph :
+    consumptions_ref = plot_multi(process_reference_data)[0]
+    cons_ref = Bars(
+        x = categories,
+        y = consumptions_ref,
+        scales = {"x": x_ord, "y": y_sc},
+        colors = ["Orange"] * 4,
+    )
+    bar_ref = Figure(
+        marks = [cons_ref],
+        axes = [ax_x, ax_y],
+        padding_x = 0.025,
+        padding_y = 0.025,
+        title = "Scénario de référence",
+        animation_duration = 1000
+    )
 
-    #tracé des barres
-    cons_ref = Bars(x=categories, 
-                y=consumptions_ref, 
-                scales={"x": x_ord, "y": y_sc},
-                colors=["Orange"]*4,
-            )
+    # First group graph :
+    consumptions1 = plot_multi(process_1_data)[0]
+    cons1 = Bars(
+        x = categories,
+        y = consumptions1,
+        scales = {"x": x_ord, "y": y_sc},
+        colors = ["Orange"] * 4,
+    )
+    bar1 = Figure(
+        marks = [cons1],
+        axes = [ax_x, ax_y],
+        padding_x = 0.025,
+        padding_y = 0.025,
+        title = "Scénario du groupe 1",
+        animation_duration = 1000
+    )
 
-    #mise en forme du graphique
-    bar_ref=Figure(marks=[cons_ref], 
-                axes=[ax_x, ax_y], 
-                padding_x=0.025, padding_y=0.025, 
-                title="Scénario de référence",
-                animation_duration = 1000,)
+    # Second group graph :
+    consumptions2 = plot_multi(process_2_data)[0]
+    cons2 = Bars(
+        x = categories,
+        y = consumptions2,
+        scales = {"x": x_ord, "y": y_sc},
+        colors = ["Orange"] * 4,
+    )
+    bar2 = Figure(
+        marks = [cons2],
+        axes = [ax_x, ax_y],
+        padding_x = 0.025,
+        padding_y = 0.025,
+        title = "Scénario du groupe 2",
+        animation_duration = 1000
+    )
 
-    #création du graphique du premier groupe
-    [consumptions1,budgets1]=plot_multi(process1_data)
-    cons1 = Bars(x=categories, 
-                y=consumptions1, 
-                scales={"x": x_ord, "y": y_sc},
-                colors=["Orange"]*4,
-            )
+    # Third group graph :
+    consumptions3 = plot_multi(process_3_data)[0]
+    cons3 = Bars(
+        x = categories,
+        y = consumptions3,
+        scales = {"x": x_ord, "y": y_sc},
+        colors = ["Orange"] * 4,
+    )
+    bar3 = Figure(
+        marks = [cons3],
+        axes = [ax_x, ax_y],
+        padding_x = 0.025,
+        padding_y = 0.025,
+        title = "Scénario du groupe 3",
+        animation_duration = 1000
+    )
 
-    bar1=Figure(marks=[cons1], 
-                axes=[ax_x, ax_y], 
-                padding_x=0.025, padding_y=0.025, 
-                title="Scénario du groupe 1",
-                animation_duration = 1000,)
 
-    #création du graphique du deuxième groupe
-    [consumptions2,budgets2]=plot_multi(process2_data)
-    cons2 = Bars(x=categories, 
-                y=consumptions2, 
-                scales={"x": x_ord, "y": y_sc},
-                colors=["Orange"]*4,
-            )
-    bar2=Figure(marks=[cons2], 
-                axes=[ax_x, ax_y], 
-                padding_x=0.025, padding_y=0.025, 
-                title="Scénario du groupe 2",
-                animation_duration = 1000,)
+    """
+    Etape de refactorisation du code :
+        - Mettre à jour le Trello avec les tâches suivantes (et celles déjà faîtes !).
+        - Ce qu'il reste à faire (dans ce fichier) :
+            - Finir de factoriser `run_graph_v3()`.
+            - Mettre sous forme de classe les graphiques `fig_n` et `bar_n` pour chaque groupe.
+            - Faire fonctionner de nouveau le bouton "Calculer" pour mettre à jour les graphiques.
+            - Retravailler l'interface (positionnement des widgets, des graphiques, etc...).
+            - Ajouter des commentaires et de la documentation.
+        - Ce qu'il reste à faire (en dehors de ce fichier) :
+            - Refactoriser tout le code nouvellement factorisé (créer un agencement BEAUCOUP plus optimal, quitte à coder de nouveau certaines parties), en :
+                - Créant, rennomant et supprimant les fichiers actuels.
+                - Créant des dossiers.
+                - Renommer les CLASSES, FONCTIONS et VARIABLES.
+                - Ecrivant des commentaires plus précis.
+                - Ext...
+            - Supprimer le fichier `temp.ipynb` lorsqu'on aura fini la refactorisation du code.
+            - Ajouter Docker.
+            - Tester un déploiment du code sur `onready.com` pour vérifier que tout fonctionne correctement (si non, pleurer).
+    Fin de l'étape de refactorisation du code.
+    """
 
-    #création du graphique du troisième groupe
-    [consumptions3,budgets3]=plot_multi(process3_data)
-    cons3 = Bars(x=categories, 
-                y=consumptions3, 
-                scales={"x": x_ord, "y": y_sc},
-                colors=["Orange"]*4,
-            )
-    bar3=Figure(marks=[cons3], 
-                axes=[ax_x, ax_y], 
-                padding_x=0.025, padding_y=0.025, 
-                title="Scénario du groupe 3",
-                animation_duration = 1000,)
 
     """
     Création des cases à cocher grâce à la librairie widgets
@@ -314,11 +332,11 @@ def run_graph_v3():
     def on_btn_click(btn):
 
         #on utilise la fonction compute pour calculer les datas de sortie avec les paramètres changs par la liste de widgets
-        process1_data = process1.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets1 if aspect in get_aspects()])
+        process_1_data = process_1.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets1 if aspect in get_aspects()])
         #on associe ensuite ces datas en plusieurs catégories pour pouvoir traiter chaque type de données correctement
-        df1 = process1_data["vector_outputs"]
-        df1_climate = process1_data["climate_outputs"]
-        float_outputs1 = process1_data["float_outputs"]
+        df1 = process_1_data["vector_outputs"]
+        df1_climate = process_1_data["climate_outputs"]
+        float_outputs1 = process_1_data["float_outputs"]
         
         #la fonction hold_sync() permet de s'assurer que le graph reste affiché et sera animé lors du changement de courbe
         with line1.hold_sync():
@@ -345,10 +363,10 @@ def run_graph_v3():
         
         #on procède de même avec le graph du groupe 2 si la case a été cochée
         if mode_2_groupes.value or mode_3_groupes.value :        
-            process2_data = process2.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets2 if aspect in get_aspects()])
-            df2 = process2_data["vector_outputs"]
-            df2_climate = process2_data["climate_outputs"]
-            float_outputs2 = process2_data["float_outputs"]
+            process_2_data = process_2.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets2 if aspect in get_aspects()])
+            df2 = process_2_data["vector_outputs"]
+            df2_climate = process_2_data["climate_outputs"]
+            float_outputs2 = process_2_data["float_outputs"]
 
             with line2.hold_sync():
                 line2.y =[df2.loc[years, "co2_emissions_2019technology_baseline3"],
@@ -370,10 +388,10 @@ def run_graph_v3():
                 
         #on procède de même avec le graph du groupe 3 si la case a été cochée
         if mode_3_groupes.value :
-            process3_data = process3.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets3 if aspect in get_aspects()])
-            df3 = process3_data["vector_outputs"]
-            df3_climate = process3_data["climate_outputs"]
-            float_outputs3 = process3_data["float_outputs"]
+            process_3_data = process_3.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets3 if aspect in get_aspects()])
+            df3 = process_3_data["vector_outputs"]
+            df3_climate = process_3_data["climate_outputs"]
+            float_outputs3 = process_3_data["float_outputs"]
 
             with line3.hold_sync():
                 line3.y =[df3.loc[years, "co2_emissions_2019technology_baseline3"],
@@ -398,9 +416,9 @@ def run_graph_v3():
     Update_btn.on_click(
         lambda btn: update_all_figures(
             btn,
-            [process1, process2, process3],
+            [process_1, process_2, process_3],
             [Liste_des_widgets1, Liste_des_widgets2, Liste_des_widgets3],
-            [fig1, fig2, fig3]
+            [ps_figure_1, ps_figure_2, ps_figure_3]
         )
     )
 
@@ -411,7 +429,7 @@ def run_graph_v3():
     app_layout_ref= AppLayout(
     header=None,
     left_sidebar=Choix_groupes,
-    center=fig_ref,
+    center=ps_figure_reference,
     right_sidebar=None,
     footer=None,
     align_items="center",
@@ -420,7 +438,7 @@ def run_graph_v3():
     app_layout1= AppLayout(
     header=None,
     left_sidebar=Choix_cartes1,
-    center=fig1,
+    center=ps_figure_1,
     right_sidebar=None,
     footer=None,
     align_items="center",
@@ -430,7 +448,7 @@ def run_graph_v3():
     app_layout2= AppLayout(
     header=None,
     left_sidebar=Choix_cartes2,
-    center=fig2,
+    center=ps_figure_2,
     right_sidebar=None,
     footer=None,
     align_items="center",
@@ -439,7 +457,7 @@ def run_graph_v3():
     app_layout3= AppLayout(
     header=None,
     left_sidebar=Choix_cartes3,
-    center=fig3,
+    center=ps_figure_3,
     right_sidebar=None,
     footer=None,
     align_items="center",
@@ -458,7 +476,7 @@ def run_graph_v3():
     Agencement des différents graphs, titres, boutons en grille 
     """
 
-    grid = GridspecLayout(9, 2, grid_gap="5px")
+    grid = GridspecLayout(9, 2, grid_gap = "5px")
     grid[0, slice(0, 2)] = app_layout_ref
     grid[1, slice(0, 2)] = app_layout1
     grid[2, slice(0, 2)] = app_layout2
