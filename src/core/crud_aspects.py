@@ -1,6 +1,6 @@
 ASPECTS = [
-    "Allouer un budget carbone (Non implementé)",
-    "Réglementation et mesures économiques (Non implementé)",
+    "[NI] Allouer un budget carbone",
+    "[NI] Réglementation et mesures économiques",
     "Sobriété",
     "Compensation des émissions",
     "Nouveaux vecteurs énergétiques",

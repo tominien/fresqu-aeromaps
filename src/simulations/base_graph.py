@@ -47,11 +47,14 @@ class BaseGraph(ABC):
 
 
     @abstractmethod
-    def update(self, data: Dict[str, Any]) -> None:
+    def update(self, data: Dict[str, Any]) -> Figure:
         """
         Update the existing figure with new dataset.
 
         #### Arguments :
         - `data (Dict[str, Any])` : New data to update the figure.
+
+        #### Returns :
+        - `Figure` : The updated figure object.
         """
         ... # Implemented in the subclass.

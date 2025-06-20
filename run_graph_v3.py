@@ -5,139 +5,29 @@ from bqplot import LinearScale, Lines, Axis, Figure, ColorScale, Bars, OrdinalSc
 from Setup_des_graphs_v1 import plot_multi # Ne plot pas vraiment un graphe, renvoie juste les données nécessaires pour le graphe multi-disciplinaire.
 from src.core.crud_aspects import get_aspects, get_aspect_id
 from src.core.process_engine import ProcessEngine
+from src.simulations.prospective_scenario_graph import ProspectiveScenarioGraph
 
 
 
 
-def generate_prospective_scenario_figure(
-        process_data: Dict[str, Any],
-        figure_title: str,
-        color_palette: Optional[List[str]] = None
-    ) -> Figure:
-    """
-    Initialise un graphique des "émissions annuelles" avec les valeurs par défaut.
-
-    Arguments :
-    - `process_data (dict [str, Any])` : Les données récolté à partir d'AéroMaps, permettant de tracer les différentes courbes du graphe.
-    - `figure_title (str)` : Le titre du graphique généré.
-    - `color_palette (List[str], optional)` : La palette de couleurs à utiliser dans le graphique (doit posséder exactement 7 couleurs).
-
-    Returns :
-    - `Figure` : Le graphique généré, à partir des données de `process_data`.
-    """
-    # Récupération des données de référence :
-    DF_vector_outputs: DataFrame  = process_data["vector_outputs"]
-    DF_climate_outputs: DataFrame = process_data["climate_outputs"]
-    years: List[int]              = process_data["years"]["full_years"]        # Liste d'entiers allant de 2000 à 2050.
-    historic_years: List[int]     = process_data["years"]["historic_years"]    # Liste d'entiers allant de 2000 à 2019.
-    prospective_years: List[int]  = process_data["years"]["prospective_years"] # Liste d'entiers allant de 2019 à 2050.
-
-    # Paramétrage de la palette de couleurs :
-    default_palette = ["#000000", "#1f77b4", "#ff7f0e", "#2ca02c", "#8c564b", "#9467bd", "#d62728"]
-    palette = color_palette if color_palette and len(color_palette) == len(default_palette) else default_palette
-    color_scale = ColorScale(colors = palette)
-
-    # Paramétrage des axes :
-    x_scale = LinearScale()
-    y_scale = LinearScale()
-    x_axis = Axis(
-        scale = x_scale,
-        num_ticks = 6,
-        label = "Années",
-        label_offset = "40px"
-    )
-    y_axis = Axis(
-        scale = y_scale,
-        orientation = "vertical",
-        label = "Emissions de CO2, en Mt",
-        label_offset = "40px"
-    )
-
-    # Tracé des émissions historiques (ligne noire allant de 2000 à 2019) :
-    historic_line = Lines(
-        x = historic_years,
-        y = DF_climate_outputs.loc[historic_years, "co2_emissions"],
-        color = [0],
-        scales = {"x": x_scale, "y": y_scale, "color": color_scale}
-    )
-
-    # Tracé des émissions prospectives (lignes allant de 2019 à 2050 : noir = "Business as usual", rouge = "Emissions restantes après application des aspects") :
-    prospective_y_lines = [
-        DF_climate_outputs.loc[prospective_years, "co2_emissions"] - DF_vector_outputs.loc[prospective_years, "carbon_offset"],
-        DF_vector_outputs.loc[prospective_years, "co2_emissions_2019technology_baseline3"]
-    ]
-    prospective_lines = Lines(
-        x = prospective_years,
-        y = prospective_y_lines,
-        color = [6, 0],
-        scales = {"x": x_scale, "y": y_scale, "color": color_scale},
-        labels = [
-            "Emissions restantes",
-            "Historique (2000-2019) / Business as usual (2019-2050)"
-        ],
-        display_legend = True
-    )
-
-    # Tracé des zones associées à chaque aspect permettant de réduire les émissions :
-    aspects_y_areas = [
-        DF_vector_outputs.loc[years, "co2_emissions_2019technology_baseline3"],
-        DF_vector_outputs.loc[years, "co2_emissions_2019technology"],
-        DF_vector_outputs.loc[years, "co2_emissions_including_aircraft_efficiency"],
-        DF_vector_outputs.loc[years, "co2_emissions_including_load_factor"],
-        DF_vector_outputs.loc[years, "co2_emissions_including_energy"],
-    ]
-    aspects_colors_indices = [1, 2, 3, 4, 5]
-    aspects_areas = Lines(
-        x = years,
-        y = aspects_y_areas,
-        color = aspects_colors_indices,
-        stroke_width = 0,
-        fill = "between",
-        fill_colors = [palette[i] for i in aspects_colors_indices],
-        fill_opacities = [0.3] * len(aspects_y_areas),
-        labels = [
-            "Changement de la demande",
-            "Efficacité technologique",
-            "Opérations en vol",
-            "Energies alternatives",
-            "Compensation carbone"
-        ],
-        display_legend = True,
-        scales={"x": x_scale, "y": y_scale, "color": color_scale},
-    )
-
-    # Création de la figure avec tous les tracés (lignes et aires) et les axes :
-    figure = Figure(
-        marks = [historic_line, prospective_lines, aspects_areas],
-        axes = [x_axis, y_axis],
-        title = figure_title,
-        animation_duration = 1000,
-        legend_location = "top-left",
-        legend_style = {"stroke-width": 0}
-    )
-    return figure
-
-
-def update_all_figures(
+def update_ps_figures(
     _btn: Button,
-    processes: List[ProcessEngine],
+    engines: List[ProcessEngine],
     widget_lists: List[List[Checkbox]],
+    ps_graphs: List[ProspectiveScenarioGraph],
     figures: List[Figure]
 ) -> None:
-    for idx, engine in enumerate(processes):
-        # Lire l’état des widgets AU CLIC
-        aspect_ids = [
+    for index in range(len(widget_lists)):
+        # 1) Récupère les IDs cochés :
+        selected_ids = [
             get_aspect_id(cb.description)
-            for cb in widget_lists[idx]
-            if getattr(cb, "value", False)
+            for cb in widget_lists[index]
+            if cb.value and cb.description in get_aspects()
         ]
-        # Recompute
-        new_data = engine.compute(aspect_ids)
-        # Nouveau jeu de marks
-        new_fig = generate_prospective_scenario_figure(new_data, figures[idx].title)
-        # MAJ atomique de la Figure
-        with figures[idx].hold_sync():
-            figures[idx].marks = new_fig.marks
+        # 2) Re-calcul :
+        new_data = engines[index].compute(selected_ids)
+        # 3) Mise à jour du graphe :
+        ps_graphs[index].update(new_data)
 
 
 def run_graph_v3():
@@ -159,10 +49,14 @@ def run_graph_v3():
     """
     Graphiques "Prospective Scenario" :
     """
-    ps_figure_reference = generate_prospective_scenario_figure(process_reference_data, "Scénario de référence")
-    ps_figure_1 = generate_prospective_scenario_figure(process_1_data, "Scénario du groupe 1")
-    ps_figure_2 = generate_prospective_scenario_figure(process_2_data, "Scénario du groupe 2")
-    ps_figure_3 = generate_prospective_scenario_figure(process_3_data, "Scénario du groupe 3")
+    ps_reference = ProspectiveScenarioGraph("Scénario de référence")
+    ps_1 = ProspectiveScenarioGraph("Scénario du groupe 1")
+    ps_2 = ProspectiveScenarioGraph("Scénario du groupe 2")
+    ps_3 = ProspectiveScenarioGraph("Scénario du groupe 3")
+    ps_figure_reference = ps_reference.draw(process_reference_data)
+    ps_figure_1 = ps_1.draw(process_1_data)
+    ps_figure_2 = ps_2.draw(process_2_data)
+    ps_figure_3 = ps_3.draw(process_3_data)
 
     """
     Graphiques "Multidisciplinary" :
@@ -414,10 +308,11 @@ def run_graph_v3():
 
     #association de la fonction que l'on vient de définir au bouton update
     Update_btn.on_click(
-        lambda btn: update_all_figures(
+        lambda btn: update_ps_figures(
             btn,
             [process_1, process_2, process_3],
             [Liste_des_widgets1, Liste_des_widgets2, Liste_des_widgets3],
+            [ps_1, ps_2, ps_3],
             [ps_figure_1, ps_figure_2, ps_figure_3]
         )
     )
