@@ -26,9 +26,9 @@ class ProspectiveScenarioGraph(BaseGraph):
         self.color_palette = color_palette if (color_palette and len(color_palette) == 7) else ["#000000", "#1f77b4", "#ff7f0e", "#2ca02c", "#8c564b", "#9467bd", "#d62728"]
 
         # Placeholders for marks :
-        self._historic_line: Lines = None
+        self._historic_line: Lines     = None
         self._prospective_lines: Lines = None
-        self._aspects_areas: Lines = None
+        self._aspects_areas: Lines     = None
 
 
     def draw(
@@ -110,28 +110,30 @@ class ProspectiveScenarioGraph(BaseGraph):
             DF_vector_outputs.loc[years, "co2_emissions_including_aircraft_efficiency"],
             DF_vector_outputs.loc[years, "co2_emissions_including_load_factor"],
             DF_vector_outputs.loc[years, "co2_emissions_including_energy"],
+            DF_vector_outputs.loc[years, "co2_emissions_including_energy"] - DF_vector_outputs.loc[years, "carbon_offset"]
         ]
-        indices = [1, 2, 3, 4, 5]
+        indices = [1, 2, 3, 4, 5, 6]
         self._aspects_areas = Lines(
             x = years,
             y = aspects_y_areas,
             color = indices,
             stroke_width = 0,
             fill = 'between',
-            fill_colors = [self.color_palette[i] for i in indices],
-            fill_opacities = [0.3] * len(indices),
+            fill_colors = [self.color_palette[i] for i in indices[:-1]],
+            fill_opacities = [0.3] * (len(indices) - 1),
             labels = [
                 "Changement de la demande",
                 "Efficacité technologique",
                 "Opérations en vol",
                 "Energies alternatives",
-                "Compensation carbone"
+                "Compensation carbone",
+                "" # Empty label for the last area to avoid legend entry (corresponds to the "Buisness as usual" line).
             ],
             display_legend = True,
             scales = {"x": x_scale, "y": y_scale, "color": color_scale}
         )
 
-        # Create the figure with all marks, axes and a legend :
+        # Create the figure with all marks, axes and the legend :
         self.figure = Figure(
             marks = [self._historic_line, self._prospective_lines, self._aspects_areas],
             axes = [x_axis, y_axis],
@@ -176,7 +178,8 @@ class ProspectiveScenarioGraph(BaseGraph):
             DF_vector_outputs.loc[years, "co2_emissions_2019technology"],
             DF_vector_outputs.loc[years, "co2_emissions_including_aircraft_efficiency"],
             DF_vector_outputs.loc[years, "co2_emissions_including_load_factor"],
-            DF_vector_outputs.loc[years, "co2_emissions_including_energy"]
+            DF_vector_outputs.loc[years, "co2_emissions_including_energy"],
+            DF_vector_outputs.loc[years, "co2_emissions_including_energy"] - DF_vector_outputs.loc[years, "carbon_offset"]
         ]
 
         return self.figure
