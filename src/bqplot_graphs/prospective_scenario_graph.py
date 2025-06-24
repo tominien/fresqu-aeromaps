@@ -1,10 +1,18 @@
 from typing import Any, Dict, List, Optional
 from pandas import DataFrame
+
+import json
+from pathlib import Path
+
 from bqplot import Figure, Lines, Axis, LinearScale, ColorScale
 from .base_graph import BaseGraph
 
 
 
+
+_DATA_DIR = Path(__file__).parent.parent / "data"
+with open(_DATA_DIR / "aspects_names.json", encoding="utf-8") as f:
+    ASPECTS_NAMES = json.load(f)
 
 class ProspectiveScenarioGraph(BaseGraph):
     """
@@ -14,7 +22,14 @@ class ProspectiveScenarioGraph(BaseGraph):
 
     #### Arguments :
     - `figure_title (str)` : Title of the figure.
-    - `color_palette (Optional[List[str]])` : Optional list of **7** colors for the graph.
+    - `color_palette (Optional[List[str]])` : Optional list of **7** colors for the graph. The color order is as follows :
+        - Index 0 : Line   "Croissance de 3% par an (2019-2050) par rapport à 2019" (worst case scenario), top line (no aspects).
+        - Index 1 : Aspect "Changement de la demande", first area from the top.
+        - Index 2 : Aspect "Efficacité technologique", second area from the top.
+        - Index 3 : Aspect "Opérations en vol", middle area.
+        - Index 4 : Aspect "Energies alternatives", second area from the bottom.
+        - Index 5 : Aspect "Compensation carbone", first area from the bottom.
+        - Index 6 : Line   "Historique (2000-2019) / Business as usual (2019-2050)", bottom line (combine all aspects).
     """
     def __init__(
             self,
@@ -23,7 +38,7 @@ class ProspectiveScenarioGraph(BaseGraph):
         ) -> None:
         super().__init__()
         self.figure_title = figure_title
-        self.color_palette = color_palette if (color_palette and len(color_palette) == 7) else ["#000000", "#1f77b4", "#ff7f0e", "#2ca02c", "#8c564b", "#9467bd", "#d62728"]
+        self.color_palette = color_palette if (color_palette and len(color_palette) == 7) else ["#d62728", "#1f77b4", "#ff7f0e", "#2ca02c", "#8c564b", "#9467bd", "#000000"]
 
         # Placeholders for marks :
         self._historic_line: Lines     = None
@@ -84,7 +99,7 @@ class ProspectiveScenarioGraph(BaseGraph):
         self._historic_line = Lines(
             x = historic_years,
             y = DF_climate_outputs.loc[historic_years, "co2_emissions"],
-            color = [0],
+            color = [6],
             scales = {"x": x_scale, "y": y_scale, "color": color_scale}
         )
         # Plot the prospective lines :
@@ -97,8 +112,8 @@ class ProspectiveScenarioGraph(BaseGraph):
             y = prospective_y_lines,
             color = [0, 6],
             labels = [
-                "Historique (2000-2019) / Croissance de 3% par an (2019-2050)",
-                "Business as usual (2019-2050)"
+                ASPECTS_NAMES["top_line_name"],
+                ASPECTS_NAMES["bottom_line_name"]
             ],
             display_legend = True,
             scales = {"x": x_scale, "y": y_scale, "color": color_scale}
@@ -122,11 +137,11 @@ class ProspectiveScenarioGraph(BaseGraph):
             fill_colors = [self.color_palette[i] for i in indices[:-1]],
             fill_opacities = [0.3] * (len(indices) - 1),
             labels = [
-                "Changement de la demande",
-                "Efficacité technologique",
-                "Opérations en vol",
-                "Energies alternatives",
-                "Compensation carbone",
+                ASPECTS_NAMES["aspect_1_name"],
+                ASPECTS_NAMES["aspect_2_name"],
+                ASPECTS_NAMES["aspect_3_name"],
+                ASPECTS_NAMES["aspect_4_name"],
+                ASPECTS_NAMES["aspect_5_name"],
                 "" # Empty label for the last area to avoid legend entry (corresponds to the "Buisness as usual" line).
             ],
             display_legend = True,

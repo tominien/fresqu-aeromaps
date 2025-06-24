@@ -10,7 +10,7 @@ from aeromaps.core.process import AeroMAPSProcess
 @lru_cache(maxsize = None)
 def compute_process(
         process: AeroMAPSProcess,
-        aspects_ids: Optional[List[int]] = None
+        cards_ids: Optional[List[int]] = None
     ) -> Dict[str, Any]:
     """
     Initialize the AeroMAPS process with default parameters and compute the results.
@@ -25,7 +25,7 @@ def compute_process(
     - And various environmental settings.
 
     #### Arguments :
-    - `aspects_ids (list[int], optional)` : List of aspects ids to apply to the process. Defaults to None (no aspects are applied <=> reference scenario).
+    - `cards_ids (list[int], optional)` : List of cards ids to apply to the process. Defaults to None (no cards are applied <=> reference scenario).
 
     #### Returns :
     - `dict [str, Any]` : The computed data from the AeroMAPS process.
@@ -136,25 +136,25 @@ def compute_process(
     parameters.carbon_offset_price_reference_years           = []
     parameters.carbon_offset_price_reference_years_values    = [5.0]
 
-    # Apply aspects if provided :
-    if aspects_ids:
-        if 2 in aspects_ids: # Sobriété
+    # Apply cards if provided :
+    if cards_ids:
+        if 2 in cards_ids: # Sobriété
             parameters.cagr_passenger_medium_range_reference_periods_values = [1.5]
             parameters.cagr_passenger_long_range_reference_periods_values   = [1.5]
             parameters.cagr_freight_reference_periods_values                = [1.5]
-        if 3 in aspects_ids: # Compensation des émissions
+        if 3 in cards_ids: # Compensation des émissions
             parameters.residual_carbon_offset_share_reference_years_values = [0.0, 0.0, 10.0, 10.0]
-        if 4 in aspects_ids: # Nouveaux vecteurs énergétiques
+        if 4 in cards_ids: # Nouveaux vecteurs énergétiques
             parameters.biofuel_share_reference_years_values     = [0.0, 4.8, 24.0, 35.0]
             parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0]
-        if 5 in aspects_ids: # Report modal
-            parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0] if 2 in aspects_ids else [1.0, 1.0, 1.0]
-        if 6 in aspects_ids: # Efficacité des opérations
+        if 5 in cards_ids: # Report modal
+            parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0] if 2 in cards_ids else [1.0, 1.0, 1.0]
+        if 6 in cards_ids: # Efficacité des opérations
             parameters.load_factor_end_year  = 90
             parameters.operations_final_gain = 10.0 # [%]
             parameters.operations_start_year = 2025
             parameters.operations_duration   = 25.0
-        if 7 in aspects_ids: # Technologie
+        if 7 in cards_ids: # Technologie
             parameters.energy_per_ask_short_range_dropin_fuel_gain_reference_years_values  = [1.0]
             parameters.energy_per_ask_medium_range_dropin_fuel_gain_reference_years_values = [1.0]
             parameters.energy_per_ask_long_range_dropin_fuel_gain_reference_years_values   = [1.0]
@@ -168,7 +168,7 @@ def compute_process(
 
 class ProcessEngine:
     """
-    Engine for running an AeroMAPS simulation process from a reference scenario and chosen aspects.
+    Engine for running an AeroMAPS simulation process from a reference scenario and chosen cards.
     """
     def __init__(self) -> None:
         """
@@ -185,15 +185,15 @@ class ProcessEngine:
 
     def compute(
             self,
-            aspects_ids: Optional[List[int]] = None
+            cards_ids: Optional[List[int]] = None
         ) -> Dict[str, Any]:
         """
-        Compute the AeroMAPS process with the given aspects.
+        Compute the AeroMAPS process with the given cards (each card affect one or more aspects of the process).
 
         #### Arguments :
-        - `aspects_ids (list[int], optional)` : List of aspect IDs to apply to the process. Defaults to None (no aspects are applied <=> reference scenario).
+        - `cards_ids (list[int], optional)` : List of cards IDs to apply to the process. Defaults to None (no cards are applied <=> reference scenario).
 
         #### Returns :
         - `dict [str, Any]` : The computed data from the AeroMAPS process.
         """
-        return compute_process(self.process, tuple(aspects_ids) if aspects_ids else None) # Converted to tuple for LRU cache compatibility
+        return compute_process(self.process, tuple(cards_ids) if cards_ids else None) # Converted to tuple for LRU cache compatibility

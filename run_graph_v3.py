@@ -1,11 +1,10 @@
 from typing import Any, Dict, List, Optional
-from pandas import DataFrame
 from ipywidgets import Checkbox, VBox, Button, Layout, AppLayout, HTML, GridspecLayout
-from bqplot import LinearScale, Lines, Axis, Figure, ColorScale, Bars, OrdinalScale
+from bqplot import LinearScale, Axis, Figure, Bars, OrdinalScale
 from Setup_des_graphs_v1 import plot_multi # Ne plot pas vraiment un graphe, renvoie juste les données nécessaires pour le graphe multi-disciplinaire.
-from src.core.crud_aspects import get_aspects, get_aspect_id
+from src.core.crud_cards import get_cards, get_card_id
 from src.core.process_engine import ProcessEngine
-from src.simulations.prospective_scenario_graph import ProspectiveScenarioGraph
+from src.bqplot_graphs.prospective_scenario_graph import ProspectiveScenarioGraph
 
 
 
@@ -14,15 +13,14 @@ def update_ps_figures(
     _btn: Button,
     engines: List[ProcessEngine],
     widget_lists: List[List[Checkbox]],
-    ps_graphs: List[ProspectiveScenarioGraph],
-    figures: List[Figure]
+    ps_graphs: List[ProspectiveScenarioGraph]
 ) -> None:
     for index in range(len(widget_lists)):
         # 1) Récupère les IDs cochés :
         selected_ids = [
-            get_aspect_id(cb.description)
+            get_card_id(cb.description)
             for cb in widget_lists[index]
-            if cb.value and cb.description in get_aspects()
+            if cb.value and cb.description in get_cards()
         ]
         # 2) Re-calcul :
         new_data = engines[index].compute(selected_ids)
@@ -42,9 +40,9 @@ def run_graph_v3():
     process_2 = ProcessEngine()
     process_3 = ProcessEngine()
     process_reference_data = process_reference.compute()
-    process_1_data = process_1.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets1 if aspect in get_aspects()])
-    process_2_data = process_2.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets2 if aspect in get_aspects()])
-    process_3_data = process_3.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets3 if aspect in get_aspects()])
+    process_1_data = process_1.compute([get_card_id(card) for card in Liste_des_widgets1 if card in get_cards()])
+    process_2_data = process_2.compute([get_card_id(card) for card in Liste_des_widgets2 if card in get_cards()])
+    process_3_data = process_3.compute([get_card_id(card) for card in Liste_des_widgets3 if card in get_cards()])
 
     """
     Graphiques "Prospective Scenario" :
@@ -177,7 +175,7 @@ def run_graph_v3():
     """
 
     #Liste des cartes sélectionnables pour pouvoir nommer les cases à cocher
-    Liste_des_cartes = get_aspects()
+    Liste_des_cartes = get_cards()
 
     #création des 8 widgets par groupe en utilisant une boucle et la liste des cartes
     for carte in Liste_des_cartes :
@@ -226,7 +224,7 @@ def run_graph_v3():
     def on_btn_click(btn):
 
         #on utilise la fonction compute pour calculer les datas de sortie avec les paramètres changs par la liste de widgets
-        process_1_data = process_1.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets1 if aspect in get_aspects()])
+        process_1_data = process_1.compute([get_card_id(card) for card in Liste_des_widgets1 if card in get_cards()])
         #on associe ensuite ces datas en plusieurs catégories pour pouvoir traiter chaque type de données correctement
         df1 = process_1_data["vector_outputs"]
         df1_climate = process_1_data["climate_outputs"]
@@ -257,7 +255,7 @@ def run_graph_v3():
         
         #on procède de même avec le graph du groupe 2 si la case a été cochée
         if mode_2_groupes.value or mode_3_groupes.value :        
-            process_2_data = process_2.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets2 if aspect in get_aspects()])
+            process_2_data = process_2.compute([get_card_id(card) for card in Liste_des_widgets2 if card in get_cards()])
             df2 = process_2_data["vector_outputs"]
             df2_climate = process_2_data["climate_outputs"]
             float_outputs2 = process_2_data["float_outputs"]
@@ -282,7 +280,7 @@ def run_graph_v3():
                 
         #on procède de même avec le graph du groupe 3 si la case a été cochée
         if mode_3_groupes.value :
-            process_3_data = process_3.compute([get_aspect_id(aspect) for aspect in Liste_des_widgets3 if aspect in get_aspects()])
+            process_3_data = process_3.compute([get_card_id(card) for card in Liste_des_widgets3 if card in get_cards()])
             df3 = process_3_data["vector_outputs"]
             df3_climate = process_3_data["climate_outputs"]
             float_outputs3 = process_3_data["float_outputs"]
@@ -312,8 +310,7 @@ def run_graph_v3():
             btn,
             [process_1, process_2, process_3],
             [Liste_des_widgets1, Liste_des_widgets2, Liste_des_widgets3],
-            [ps_1, ps_2, ps_3],
-            [ps_figure_1, ps_figure_2, ps_figure_3]
+            [ps_1, ps_2, ps_3]
         )
     )
 
