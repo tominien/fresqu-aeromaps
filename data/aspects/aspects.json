@@ -1,0 +1,9 @@
+{
+    "aspects_names": {
+        "modal_shift": "Changement de la demande",
+        "technology": "Efficacité technologique",
+        "flight_operations": "Opérations en vol",
+        "alternative_energies": "Energies alternatives",
+        "carbon_compensation": "Compensation carbone"
+    }
+}

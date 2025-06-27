@@ -1,18 +1,27 @@
 from typing import Any, Dict, List, Optional
-from pandas import DataFrame
+from pandas import DataFrame, concat
+
+from utils import generate_pastel_palette, float_to_int_string
 
 import json
 from pathlib import Path
 
-from bqplot import Figure, Lines, Axis, LinearScale, ColorScale
+from bqplot import Figure, Lines, Axis, LinearScale, ColorScale, Label
 from .base_graph import BaseGraph
 
+from crud.crud_aspects import get_aspects_names
 
 
 
-_DATA_DIR = Path(__file__).parent.parent / "data"
-with open(_DATA_DIR / "aspects_names.json", encoding="utf-8") as f:
-    ASPECTS_NAMES = json.load(f)
+
+# Load the aspects names from the database :
+ASPECTS_NAMES: Dict[str, str] = get_aspects_names()
+
+# Load the prospective scenario JSON file :
+PROSPECTIVE_SCENARIO_JSON_PATH = Path(__file__).resolve().parents[2] / "data" / "prospective_scenario.json"
+with open(PROSPECTIVE_SCENARIO_JSON_PATH, "r", encoding="utf-8") as file:
+    PROSPECTIVE_SCENARIO_JSON = json.load(file)
+
 
 class ProspectiveScenarioGraph(BaseGraph):
     """
@@ -22,14 +31,11 @@ class ProspectiveScenarioGraph(BaseGraph):
 
     #### Arguments :
     - `figure_title (str)` : Title of the figure.
-    - `color_palette (Optional[List[str]])` : Optional list of **7** colors for the graph. The color order is as follows :
-        - Index 0 : Line   "Croissance de 3% par an (2019-2050) par rapport à 2019" (worst case scenario), top line (no aspects).
-        - Index 1 : Aspect "Changement de la demande", first area from the top.
-        - Index 2 : Aspect "Efficacité technologique", second area from the top.
-        - Index 3 : Aspect "Opérations en vol", middle area.
-        - Index 4 : Aspect "Energies alternatives", second area from the bottom.
-        - Index 5 : Aspect "Compensation carbone", first area from the bottom.
-        - Index 6 : Line   "Historique (2000-2019) / Business as usual (2019-2050)", bottom line (combine all aspects).
+    - `color_palette (Optional[List[str]])` : Optional list of **`n + 3`** colors for the graph, where `n` represents the number of aspects. The color order applies the following logic :
+        - Index 0 : Line "Historic", ranging from 2000 to 2019 included.
+        - Index 1 : Line "Worst case scenario / No aspects considered", ranging from 2019 to 2050 incled (top line, including no aspects).
+        - Index 2 : Line "Business as usual / All aspects considered", ranging from 2019 to 2050 included (bottom line, combining all aspects).
+        - Index k, k ∈ [3, n + 3] : Area of the aspect k (position k in the `ASPECTS_NAMES` dictionary), ranging from 2019 to 2050 included.
     """
     def __init__(
             self,
@@ -37,13 +43,20 @@ class ProspectiveScenarioGraph(BaseGraph):
             color_palette: Optional[List[str]] = None
         ) -> None:
         super().__init__()
+
         self.figure_title = figure_title
-        self.color_palette = color_palette if (color_palette and len(color_palette) == 7) else ["#d62728", "#1f77b4", "#ff7f0e", "#2ca02c", "#8c564b", "#9467bd", "#000000"]
+        self.color_palette = (
+            color_palette
+            if (color_palette and len(color_palette) == len(ASPECTS_NAMES) + 3)
+            else ["#8c564b", "#000000", "#d62728"] + generate_pastel_palette(len(ASPECTS_NAMES) + 1)
+        )
 
         # Placeholders for marks :
-        self._historic_line: Lines     = None
-        self._prospective_lines: Lines = None
-        self._aspects_areas: Lines     = None
+        self._historic_line: Lines        = None
+        self._prospective_lines: Lines    = None
+        self._aspects_areas: Lines        = None
+        self._aspects_labels: List[Label] = []
+        self._past_shade: Lines           = None
 
 
     def draw(
@@ -96,10 +109,13 @@ class ProspectiveScenarioGraph(BaseGraph):
         )
 
         # Plot the historic line :
+        historic_y_line = DF_climate_outputs.loc[historic_years, "co2_emissions"]
         self._historic_line = Lines(
             x = historic_years,
-            y = DF_climate_outputs.loc[historic_years, "co2_emissions"],
-            color = [6],
+            y = historic_y_line,
+            color = [0],
+            labels = PROSPECTIVE_SCENARIO_JSON["historic_line_name"],
+            display_legend = True,
             scales = {"x": x_scale, "y": y_scale, "color": color_scale}
         )
         # Plot the prospective lines :
@@ -110,12 +126,13 @@ class ProspectiveScenarioGraph(BaseGraph):
         self._prospective_lines = Lines(
             x = prospective_years,
             y = prospective_y_lines,
-            color = [0, 6],
+            color = [1, 2],
             labels = [
-                ASPECTS_NAMES["top_line_name"],
-                ASPECTS_NAMES["bottom_line_name"]
+                PROSPECTIVE_SCENARIO_JSON["no_aspects_line_name"],
+                PROSPECTIVE_SCENARIO_JSON["every_aspects_line_name"]
             ],
             display_legend = True,
+            line_style = "dashed", # Make the prospective lines dashed.
             scales = {"x": x_scale, "y": y_scale, "color": color_scale}
         )
         # Plot the aspects areas :
@@ -127,7 +144,7 @@ class ProspectiveScenarioGraph(BaseGraph):
             DF_vector_outputs.loc[years, "co2_emissions_including_energy"],
             DF_vector_outputs.loc[years, "co2_emissions_including_energy"] - DF_vector_outputs.loc[years, "carbon_offset"]
         ]
-        indices = [1, 2, 3, 4, 5, 6]
+        indices = [index for index in range(3, len(self.color_palette))]
         self._aspects_areas = Lines(
             x = years,
             y = aspects_y_areas,
@@ -136,21 +153,52 @@ class ProspectiveScenarioGraph(BaseGraph):
             fill = 'between',
             fill_colors = [self.color_palette[i] for i in indices[:-1]],
             fill_opacities = [0.3] * (len(indices) - 1),
-            labels = [
-                ASPECTS_NAMES["aspect_1_name"],
-                ASPECTS_NAMES["aspect_2_name"],
-                ASPECTS_NAMES["aspect_3_name"],
-                ASPECTS_NAMES["aspect_4_name"],
-                ASPECTS_NAMES["aspect_5_name"],
-                "" # Empty label for the last area to avoid legend entry (corresponds to the "Buisness as usual" line).
-            ],
+            labels = [*ASPECTS_NAMES.values(), ""], # Empty label for the last area to avoid legend entry (corresponds to the "Buisness as usual" line).
             display_legend = True,
             scales = {"x": x_scale, "y": y_scale, "color": color_scale}
         )
 
+        # Display the final values of the prospective lines on the right side of the graph :
+        prospective_years_final_value = [serie.iloc[-1] for serie in prospective_y_lines]
+        prospective_years_final_value_formatted = [float_to_int_string(value) for value in prospective_years_final_value]
+        self._prospective_labels = Label(
+            x = [years[-1], years[-1]], # Position the labels at the end of the prospective lines.
+            y = prospective_years_final_value, # Position the labels at the same height as the end of both prospective lines.
+            color = [1, 2],
+            text = prospective_years_final_value_formatted,
+            default_size = 12, # Size of the labels (12px).
+            align = 'start',
+            x_offset = 8,
+            scales = {'x': x_scale, 'y': y_scale, 'color': color_scale},
+            apply_clip = False
+        )
+
+        # Create the past shade area (from 2000 to 2019 / nowadays) :
+        start_year = years[0]
+        end_year = 2019 # Which you can replace by "date.today().year" (also add "from datetime import date" on top of the file) to meke the gray area go up to the current year.
+        all_y_lines = concat([historic_y_line] + prospective_y_lines + aspects_y_areas) # To determine the y-axis limits of the past shade area.
+        y_min = min(all_y_lines) if not all_y_lines.empty else 0
+        y_max = max(all_y_lines) if not all_y_lines.empty else 0
+        self._past_shade = Lines(
+            x = [start_year, end_year, end_year, start_year, start_year],
+            y = [y_min, y_min, y_max, y_max, y_min],
+            scales = {"x": x_scale, "y": y_scale},
+            fill = "inside",
+            fill_colors = ["lightgrey"],
+            fill_opacities = [0.3],
+            stroke_width = 0,
+            display_legend = False
+        )
+
         # Create the figure with all marks, axes and the legend :
         self.figure = Figure(
-            marks = [self._historic_line, self._prospective_lines, self._aspects_areas],
+            marks = [
+                # self._past_shade,
+                self._historic_line,
+                self._prospective_lines,
+                self._aspects_areas,
+                self._prospective_labels
+            ],
             axes = [x_axis, y_axis],
             title = self.figure_title,
             animation_duration = 1000,
@@ -183,9 +231,11 @@ class ProspectiveScenarioGraph(BaseGraph):
 
         # Updating the historic line data is not necessary as it remains constant.
         # Update the prospective lines data (updating the x-axis is not necessary as it remains constant) :
+        prospective_lines_top_line = DF_vector_outputs.loc[prospective_years, "co2_emissions_2019technology_baseline3"]
+        prospective_lines_bottom_line = DF_climate_outputs.loc[prospective_years, "co2_emissions"] - DF_vector_outputs.loc[prospective_years, "carbon_offset"]
         self._prospective_lines.y = [
-            DF_vector_outputs.loc[prospective_years, "co2_emissions_2019technology_baseline3"],
-            DF_climate_outputs.loc[prospective_years, "co2_emissions"] - DF_vector_outputs.loc[prospective_years, "carbon_offset"]
+            prospective_lines_top_line,
+            prospective_lines_bottom_line
         ]
         # Update the aspects areas data (updating the x-axis is not necessary as it remains constant) :
         self._aspects_areas.y = [
@@ -195,6 +245,15 @@ class ProspectiveScenarioGraph(BaseGraph):
             DF_vector_outputs.loc[years, "co2_emissions_including_load_factor"],
             DF_vector_outputs.loc[years, "co2_emissions_including_energy"],
             DF_vector_outputs.loc[years, "co2_emissions_including_energy"] - DF_vector_outputs.loc[years, "carbon_offset"]
+        ]
+        # Update the prospective labels data (updating the x-axis is not necessary as it remains constant) :
+        self._prospective_labels.y = [
+            prospective_lines_top_line.iloc[-1],
+            prospective_lines_bottom_line.iloc[-1]
+        ]
+        self._prospective_labels.text = [
+            float_to_int_string(prospective_lines_top_line.iloc[-1]),
+            float_to_int_string(prospective_lines_bottom_line.iloc[-1])
         ]
 
         return self.figure

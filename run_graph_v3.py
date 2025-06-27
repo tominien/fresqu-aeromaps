@@ -2,7 +2,7 @@ from typing import Any, Dict, List, Optional
 from ipywidgets import Checkbox, VBox, Button, Layout, AppLayout, HTML, GridspecLayout
 from bqplot import LinearScale, Axis, Figure, Bars, OrdinalScale
 from Setup_des_graphs_v1 import plot_multi # Ne plot pas vraiment un graphe, renvoie juste les données nécessaires pour le graphe multi-disciplinaire.
-from src.core.crud_cards import get_cards, get_card_id
+from crud.crud_cards import get_cards, get_card_id
 from src.core.process_engine import ProcessEngine
 from src.bqplot_graphs.prospective_scenario_graph import ProspectiveScenarioGraph
 
