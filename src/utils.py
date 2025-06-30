@@ -30,6 +30,7 @@ def generate_pastel_palette(number_of_colors: int) -> list[str]:
             int(b * 255)
         )
         palette.append(hex_color)
+
     return palette
 
 

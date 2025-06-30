@@ -1,9 +1,34 @@
 {
-    "aspects_names": {
-        "modal_shift": "Changement de la demande",
-        "technology": "Efficacité technologique",
-        "flight_operations": "Opérations en vol",
-        "alternative_energies": "Energies alternatives",
-        "carbon_compensation": "Compensation carbone"
+    "modal_shift_ASPECT": {
+        "name": "Changement de la demande",
+        "output_formula": [
+            ["co2_emissions_2019technology_baseline3", "vector_outputs", "full_years"]
+        ]
+    },
+    "technology_ASPECT": {
+        "name": "Efficacité technologique",
+        "output_formula": [
+            ["co2_emissions_2019technology", "vector_outputs", "full_years"]
+        ]
+    },
+    "flight_operations_ASPECT": {
+        "name": "Opérations en vol",
+        "output_formula": [
+            ["co2_emissions_including_aircraft_efficiency", "vector_outputs", "full_years"]
+        ]
+    },
+    "alternative_energies_ASPECT": {
+        "name": "Énergies alternatives",
+        "output_formula": [
+            ["co2_emissions_including_energy", "vector_outputs", "full_years"]
+        ]
+    },
+    "carbon_compensation_ASPECT": {
+        "name": "Compensation carbone",
+        "output_formula": [
+            ["co2_emissions_including_energy", "vector_outputs", "full_years"],
+            "-",
+            ["carbon_offset", "vector_outputs", "full_years"]
+        ]
     }
 }
