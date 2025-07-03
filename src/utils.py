@@ -1,6 +1,17 @@
+from pathlib import Path
+
 import colorsys
 
 
+
+
+ROOT_DIRECTORY_PATH = Path(__file__).resolve().parents[1]
+
+CARDS_JSON_PATH   = ROOT_DIRECTORY_PATH / "data" / "cards" / "cards.json"
+
+ASPECTS_JSON_PATH = ROOT_DIRECTORY_PATH / "data" / "aspects" / "aspects.json"
+
+LINES_JSON_PATH   = ROOT_DIRECTORY_PATH / "data" / "aspects" / "prospective_scenario_lines.json"
 
 
 def generate_pastel_palette(number_of_colors: int) -> list[str]:

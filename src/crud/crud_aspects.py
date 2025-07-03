@@ -1,19 +1,15 @@
 from typing import Dict, List, Any
 
+from utils import ASPECTS_JSON_PATH
+
 import json
-from pathlib import Path
 
 
-
-
-_ROOT_DIRECTORY_PATH = Path(__file__).resolve().parents[2]
-
-ASPECTS_JSON_PATH = _ROOT_DIRECTORY_PATH / "data" / "aspects" / "aspects.json"
 
 
 def _load_aspects(path: str = ASPECTS_JSON_PATH) -> Dict[str, Dict[str, Any]]:
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    with open(path, "r", encoding = "utf-8") as file:
+        return json.load(file)
 
 
 def get_aspects(path: str = ASPECTS_JSON_PATH) -> Dict[str, Dict[str, Any]]:

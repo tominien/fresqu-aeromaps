@@ -1,0 +1,23 @@
+{
+    "historic_LINE": {
+        "name": "Émissions historiques",
+        "output_formula": {
+            "expression": "climate_outputs('co2_emissions')",
+            "year_range": "historic_years"
+        }
+    },
+    "no_aspects_LINE": {
+        "name": "Croissance du trafic aérien de 3% par an jusqu'en 2050",
+        "output_formula": {
+            "expression": "vector_outputs('co2_emissions_2019technology_baseline3')",
+            "year_range": "prospective_years"
+        }
+    },
+    "all_aspects_LINE": {
+        "name": "Émissions restantes en appliquant toutes les cartes choisies",
+        "output_formula": {
+            "expression": "climate_outputs('co2_emissions') - vector_outputs('carbon_offset')",
+            "year_range": "prospective_years"
+        }
+    }
+}

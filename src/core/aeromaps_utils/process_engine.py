@@ -1,8 +1,12 @@
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Any, Optional
+
+from crud.crud_cards import get_cards_ids
+
 from functools import lru_cache
+
 from aeromaps import create_process
-from aeromaps.models.parameters import Parameters
 from aeromaps.core.process import AeroMAPSProcess
+from aeromaps.models.parameters import Parameters
 
 
 
@@ -10,7 +14,7 @@ from aeromaps.core.process import AeroMAPSProcess
 @lru_cache(maxsize = None)
 def compute_process(
         process: AeroMAPSProcess,
-        cards_ids: Optional[List[int]] = None
+        cards_ids: Optional[List[str]] = None
     ) -> Dict[str, Any]:
     """
     Initialize the AeroMAPS process with default parameters and compute the results.
@@ -25,11 +29,16 @@ def compute_process(
     - And various environmental settings.
 
     #### Arguments :
-    - `cards_ids (list[int], optional)` : List of cards ids to apply to the process. Defaults to None (no cards are applied <=> reference scenario).
+    - `cards_ids (list[str], optional)` : List of cards ids to apply to the process. Defaults to None (no cards are applied <=> reference scenario).
 
     #### Returns :
     - `dict [str, Any]` : The computed data from the AeroMAPS process.
     """
+    # Check if all the cards_ids are valid :
+    if cards_ids and not all(card_id in get_cards_ids() for card_id in cards_ids):
+        raise ValueError("Invalid card IDs provided. Please check the available cards.")
+
+    # Initialize the AeroMAPS process :
     parameters: Parameters = process.parameters
 
     # Air traffic evolution :
@@ -138,28 +147,53 @@ def compute_process(
 
     # Apply cards if provided :
     if cards_ids:
-        if 2 in cards_ids: # Sobriété
+        # Budget carbone :
+        if "carbon_budget" in cards_ids:
+            ...
+    
+        # Réglementations et mesures économiques :
+        if "reglementations_and_economical_measures" in cards_ids:
+            ...
+
+        # Sensibiliser & Éduquer :
+        if "awareness_and_education" in cards_ids:
+            ...
+
+        # Sobriété :
+        if "sobriety" in cards_ids:
             parameters.cagr_passenger_medium_range_reference_periods_values = [1.5]
             parameters.cagr_passenger_long_range_reference_periods_values   = [1.5]
             parameters.cagr_freight_reference_periods_values                = [1.5]
-        if 3 in cards_ids: # Compensation des émissions
+
+        # Compensation des émissions :
+        if "emmissions_compensation" in cards_ids:
             parameters.residual_carbon_offset_share_reference_years_values = [0.0, 0.0, 10.0, 10.0]
-        if 4 in cards_ids: # Nouveaux vecteurs énergétiques
-            parameters.biofuel_share_reference_years_values     = [0.0, 4.8, 24.0, 35.0]
+
+        # Nouveaux vecteurs énergétiques :
+        if "new_energies" in cards_ids:
+            parameters.biofuel_share_reference_years_values     = [0.0, 4.8, 24.0, 35.0] # Vérifier ces données !
             parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0]
-        if 5 in cards_ids: # Report modal
-            parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0] if 2 in cards_ids else [1.0, 1.0, 1.0]
-        if 6 in cards_ids: # Efficacité des opérations
+
+        # Report modal :
+        if "modal_shift" in cards_ids:
+            if "sobriety" in cards_ids:
+                parameters.cagr_passenger_short_range_reference_periods_values = [0.0, 0.0, 0.0]
+            else:
+                parameters.cagr_passenger_short_range_reference_periods_values = [1.0, 1.0, 1.0]
+
+        # Efficacité des opérations :
+        if "operations_efficiency" in cards_ids:
             parameters.load_factor_end_year  = 90
-            parameters.operations_final_gain = 10.0 # [%]
+            parameters.operations_final_gain = 10.0
             parameters.operations_start_year = 2025
             parameters.operations_duration   = 25.0
-        if 7 in cards_ids: # Technologie
+
+        # Technologie :
+        if "technology" in cards_ids:
             parameters.energy_per_ask_short_range_dropin_fuel_gain_reference_years_values  = [1.0]
             parameters.energy_per_ask_medium_range_dropin_fuel_gain_reference_years_values = [1.0]
             parameters.energy_per_ask_long_range_dropin_fuel_gain_reference_years_values   = [1.0]
-            parameters.hydrogen_final_market_share_short_range                             = 50.0 # [%]
-            parameters.hydrogen_introduction_year_short_range                              = 2035
+            parameters.hydrogen_final_market_share_short_range                             = 0
             parameters.fleet_renewal_duration                                              = 15.0
 
     process.compute()
@@ -183,6 +217,18 @@ class ProcessEngine:
         self.process: AeroMAPSProcess = create_process()
 
 
+    @lru_cache(maxsize = None)
+    def get_process(self) -> AeroMAPSProcess:
+        """
+        Get the AeroMAPS process instance.
+
+        #### Returns :
+        - `AeroMAPSProcess` : The AeroMAPS process instance.
+        """
+        return self.process
+
+
+    @lru_cache(maxsize = None)
     def compute(
             self,
             cards_ids: Optional[List[int]] = None

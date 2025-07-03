@@ -1,34 +1,37 @@
 {
-    "modal_shift_ASPECT": {
+    "demand_change_ASPECT": {
         "name": "Changement de la demande",
-        "output_formula": [
-            ["co2_emissions_2019technology_baseline3", "vector_outputs", "full_years"]
-        ]
+        "output_formula": {
+            "expression": "vector_outputs('co2_emissions_2019technology_baseline3')",
+            "year_range": "full_years"
+        }
     },
     "technology_ASPECT": {
         "name": "Efficacité technologique",
-        "output_formula": [
-            ["co2_emissions_2019technology", "vector_outputs", "full_years"]
-        ]
+        "output_formula": {
+            "expression": "vector_outputs('co2_emissions_2019technology')",
+            "year_range": "full_years"
+        }
     },
     "flight_operations_ASPECT": {
         "name": "Opérations en vol",
-        "output_formula": [
-            ["co2_emissions_including_aircraft_efficiency", "vector_outputs", "full_years"]
-        ]
+        "output_formula": {
+            "expression": "vector_outputs('co2_emissions_including_aircraft_efficiency')",
+            "year_range": "full_years"
+        }
     },
     "alternative_energies_ASPECT": {
         "name": "Énergies alternatives",
-        "output_formula": [
-            ["co2_emissions_including_energy", "vector_outputs", "full_years"]
-        ]
+        "output_formula": {
+            "expression": "vector_outputs('co2_emissions_including_load_factor')",
+            "year_range": "full_years"
+        }
     },
     "carbon_compensation_ASPECT": {
         "name": "Compensation carbone",
-        "output_formula": [
-            ["co2_emissions_including_energy", "vector_outputs", "full_years"],
-            "-",
-            ["carbon_offset", "vector_outputs", "full_years"]
-        ]
+        "output_formula": {
+            "expression": "vector_outputs('co2_emissions_including_energy')",
+            "year_range": "full_years"
+        }
     }
 }

@@ -1,0 +1,38 @@
+{
+    "carbon_budget_CARD": {
+        "name": "[NI] Allouer un budget carbone",
+        "id": "carbon_budget"
+    },
+    "reglementations_and_economical_measures_CARD": {
+        "name": "[NI] Réglementation et mesures économiques",
+        "id": "reglementations_and_economical_measures"
+    },
+    "awareness_and_education_CARD": {
+        "name": "[NI] Sensibiliser & Éduquer",
+        "id": "awareness_and_education"
+    },
+    "sobriety_CARD": {
+        "name": "Sobriété",
+        "id": "sobriety"
+    },
+    "emmissions_compensation_CARD": {
+        "name": "Compensation des émissions",
+        "id": "emmissions_compensation"
+    },
+    "new_energies_CARD": {
+        "name": "Nouveaux vecteurs énergétiques",
+        "id": "new_energies"
+    },
+    "modal_shift_CARD": {
+        "name": "Report modal",
+        "id": "modal_shift"
+    },
+    "operations_efficiency_CARD": {
+        "name": "Efficacité des opérations",
+        "id": "operations_efficiency"
+    },
+    "technology_CARD": {
+        "name": "Technologie",
+        "id": "technology"
+    }
+}
