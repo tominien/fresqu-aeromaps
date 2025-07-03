@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 from bqplot import Figure, Bars, Axis, OrdinalScale, LinearScale
 from bqplot_figures.base_graph import BaseGraph
 
-from core.aeromaps_utils.TEMPORARY_FILE_multidisciplinary_graph_utils import M_plot_consumptions
+from core.aeromaps_utils.TEMPORARY_FILE_multidisciplinary_graph_utils import M_plot_budgets
 
 
 
@@ -85,7 +85,7 @@ class MultidisciplinaryGraph(BaseGraph):
         )
 
         # Plot the categories :
-        categories_y_bars = M_plot_consumptions(process_data)
+        categories_y_bars = M_plot_budgets(process_data)
         self._categories = Bars(
             x = CATEGORIES_NAMES,
             y = categories_y_bars,
@@ -122,6 +122,6 @@ class MultidisciplinaryGraph(BaseGraph):
 
         # Update the categories data :
         with self._categories.hold_sync():
-            self._categories.y = M_plot_consumptions(process_data)
+            self._categories.y = M_plot_budgets(process_data)
 
         return self.figure

@@ -67,7 +67,7 @@ def compute_process(
     parameters.energy_per_ask_long_range_dropin_fuel_gain_reference_years_values   = [0.5]
         # Hydrogen aircraft :
             # Values for setting logistic functions by category :
-    parameters.hydrogen_final_market_share_short_range = 0.0 # [%]
+    parameters.hydrogen_final_market_share_short_range = 0.0
     parameters.hydrogen_introduction_year_short_range  = 2051
     parameters.fleet_renewal_duration                  = 20.0
             # Relative energy consumption for hydrogen aircraft with respect to drop-in aircraft [%] :
@@ -76,7 +76,7 @@ def compute_process(
 
     # Aircraft fleet and operation evolution - Operations :
         # Values for setting the logistic function :
-    parameters.operations_final_gain = 5.0 # [%]
+    parameters.operations_final_gain = 5.0
     parameters.operations_start_year = 2025
     parameters.operations_duration   = 25.0
 
@@ -140,8 +140,8 @@ def compute_process(
     parameters.co2_cost_reference_years_values               = [0.225]
     parameters.carbon_tax_reference_years                    = []
     parameters.carbon_tax_reference_years_values             = [5.0]
-    parameters.exogenous_carbon_price_reference_years        = [2020, 2030, 2040, 2050]
-    parameters.exogenous_carbon_price_reference_years_values = [54, 250, 500, 775]
+    parameters.exogenous_carbon_price_reference_years        = [2020, 2030, 2040, 2050] # Non trouvé.
+    parameters.exogenous_carbon_price_reference_years_values = [54, 250, 500, 775]      # Non trouvé.
     parameters.carbon_offset_price_reference_years           = []
     parameters.carbon_offset_price_reference_years_values    = [5.0]
 
@@ -172,7 +172,7 @@ def compute_process(
         # Nouveaux vecteurs énergétiques :
         if "new_energies" in cards_ids:
             parameters.biofuel_share_reference_years_values     = [0.0, 4.8, 24.0, 35.0] # Vérifier ces données !
-            parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0]
+            parameters.electrofuel_share_reference_years_values = [0.0, 1.2, 10.0, 35.0] # Vérifier ces données !
 
         # Report modal :
         if "modal_shift" in cards_ids:
