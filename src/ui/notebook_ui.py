@@ -14,31 +14,6 @@ from ipywidgets import VBox, HBox, Layout, AppLayout, Checkbox, Button, HTML
 
 
 
-"""
-Etape de refactorisation du code :
-    - Mettre à jour le Trello avec les tâches suivantes (et celles déjà faîtes !).
-    - Ce qu'il reste à faire (dans ce fichier) :
-        - Finir de factoriser `run_graph_v3()`.
-        - Mettre sous forme de classe les graphiques `fig_n` et `bar_n` pour chaque groupe.
-        - Faire fonctionner de nouveau le bouton "Calculer" pour mettre à jour les graphiques.
-        - Retravailler l'interface (positionnement des widgets, des graphiques, etc...).
-        - Ajouter des commentaires et de la documentation.
-    - Ce qu'il reste à faire (en dehors de ce fichier) :
-        - Refactoriser tout le code nouvellement factorisé (créer un agencement BEAUCOUP plus optimal, quitte à coder de nouveau certaines parties), en :
-            - Créant, rennomant et supprimant les fichiers actuels.
-            - Créant des dossiers.
-            - Renommer les CLASSES, FONCTIONS et VARIABLES.
-            - Ecrivant des commentaires plus précis.
-            - Ext...
-        - Supprimer le fichier `temp.ipynb` lorsqu'on aura fini la refactorisation du code.
-        - Ajouter Docker.
-        - Tester un déploiment du code sur `onready.com` pour vérifier que tout fonctionne correctement (si non, pleurer).
-Fin de l'étape de refactorisation du code.
-"""
-
-
-
-
 CARDS_NAMES = get_cards_name()
 
 

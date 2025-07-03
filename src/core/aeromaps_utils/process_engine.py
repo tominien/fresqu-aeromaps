@@ -54,7 +54,7 @@ def compute_process(
 
     # Aircraft fleet and operation evolution - Aircraft load factor :
         # Aircraft load factor in 2050 [%] :
-    parameters.load_factor_end_year = 85 # 2019 value = 82.399312
+    parameters.load_factor_end_year = 85.0 # 2019 value = 82.399312
 
     # Aircraft fleet and operation evolution - Aircraft efficiency using the top-down approach :
         # Drop-in aircraft :
@@ -183,7 +183,7 @@ def compute_process(
 
         # Efficacité des opérations :
         if "operations_efficiency" in cards_ids:
-            parameters.load_factor_end_year  = 90
+            parameters.load_factor_end_year  = 90.0
             parameters.operations_final_gain = 10.0
             parameters.operations_start_year = 2025
             parameters.operations_duration   = 25.0
@@ -193,7 +193,7 @@ def compute_process(
             parameters.energy_per_ask_short_range_dropin_fuel_gain_reference_years_values  = [1.0]
             parameters.energy_per_ask_medium_range_dropin_fuel_gain_reference_years_values = [1.0]
             parameters.energy_per_ask_long_range_dropin_fuel_gain_reference_years_values   = [1.0]
-            parameters.hydrogen_final_market_share_short_range                             = 0
+            parameters.hydrogen_final_market_share_short_range                             = 0.0
             parameters.fleet_renewal_duration                                              = 15.0
 
     process.compute()
