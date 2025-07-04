@@ -1,16 +1,4 @@
 {
-    "carbon_budget_CARD": {
-        "name": "[NI] Allouer un budget carbone",
-        "id": "carbon_budget"
-    },
-    "reglementations_and_economical_measures_CARD": {
-        "name": "[NI] Réglementation et mesures économiques",
-        "id": "reglementations_and_economical_measures"
-    },
-    "awareness_and_education_CARD": {
-        "name": "[NI] Sensibiliser & Éduquer",
-        "id": "awareness_and_education"
-    },
     "sobriety_CARD": {
         "name": "Sobriété",
         "id": "sobriety"
@@ -34,5 +22,17 @@
     "technology_CARD": {
         "name": "Technologie",
         "id": "technology"
+    },
+    "carbon_budget_CARD": {
+        "name": "[NI] Allouer un budget carbone",
+        "id": "carbon_budget"
+    },
+    "reglementations_and_economical_measures_CARD": {
+        "name": "[NI] Réglementation et mesures économiques",
+        "id": "reglementations_and_economical_measures"
+    },
+    "awareness_and_education_CARD": {
+        "name": "[NI] Sensibiliser & Éduquer",
+        "id": "awareness_and_education"
     }
 }
