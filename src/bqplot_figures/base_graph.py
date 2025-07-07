@@ -18,7 +18,6 @@ class BaseGraph(ABC):
     #### Attributes :
     - `figure (Figure)` : The figure instance.
     """
-
     def __init__(self) -> None:
         self.figure: Figure = None
 
@@ -35,28 +34,48 @@ class BaseGraph(ABC):
 
 
     @abstractmethod
-    def draw(self, data: Dict[str, Any]) -> Figure:
+    def draw(
+            self,
+            process_data: Dict[str, Any],
+            override: bool = False
+        ) -> Figure:
         """
-        Create and configure the figure based on provided data.
+        Create **initial** figure.
+
+        If the figure is already drawn and you just want to update the data, it is recommended to use the `update()` method instead.
+        This method will not redraw the figure but will update the lines' data only.
+
+        However, if you want to redraw the figure completely, you can set `override = True` to force a redraw.
+        This action takes more time and resources to execute.
 
         #### Arguments :
-        - `data (Dict[str, Any])` : Raw simulation output data.
+        - `process_data (Dict[str, Any])` : Data dictionary containing the necessary data for plotting the initial graph.
+        - `override (bool)` : If `True`, forces a redraw of the figure, even if it has already been drawn. Defaults to `False`.
 
         #### Returns :
-        - `Figure` : The created figure object.
+        - `Figure` : The initial figure with historical, prospective, and aspects areas plotted.
         """
+        # Check is the figure is already drawn and if override is set to False :
+        if self.figure is not None and not override :
+            return self.update(process_data)
+
         ... # Implemented in the subclass.
 
 
     @abstractmethod
-    def update(self, data: Dict[str, Any]) -> Figure:
+    def update(self, process_data: Dict[str, Any]) -> Figure:
         """
-        Update the existing figure with new dataset.
+        Update lines' data only, avoiding full redraw.
+        This method updates the existing figure with new data without redrawing the entire figure.
 
         #### Arguments :
-        - `data (Dict[str, Any])` : New data to update the figure.
+        - `process_data (Dict[str, Any])` : New processed data to update the figure.
 
         #### Returns :
-        - `Figure` : The updated figure object.
+        - `Figure` : The updated figure object with new data.
         """
+        # Check if the figure is already drawn :
+        if self.figure is None:
+            return self.draw(process_data, override = True)
+
         ... # Implemented in the subclass.

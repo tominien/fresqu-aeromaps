@@ -5,19 +5,19 @@ from pandas import Series, concat
 from bqplot import Figure, Lines, Axis, LinearScale, Label
 from bqplot_figures.base_graph import BaseGraph
 
-from crud.crud_aspects import get_aspects, get_aspects_names
+from crud.crud_prospective_scenario_aspects import get_aspects, get_aspects_names
 
 from core.aeromaps_utils.extract_processed_data import get_years
 from core.aeromaps_utils.evaluate_expression import evaluate_expression_aeromaps
 
-from utils import LINES_JSON_PATH, generate_pastel_palette, float_to_int_string
+from utils import PROSPECTIVE_SCENARIO_ASPECTS_LINES_JSON_PATH, generate_pastel_palette, float_to_int_string
 
 
 
 
 # Load the lines (historic, no aspect and all aspect) from the JSON file :
-LINES                                       = get_aspects(LINES_JSON_PATH)
-LINES_NAMES: List[str]                      = get_aspects_names(LINES_JSON_PATH)
+LINES                                       = get_aspects(PROSPECTIVE_SCENARIO_ASPECTS_LINES_JSON_PATH)
+LINES_NAMES: List[str]                      = get_aspects_names(PROSPECTIVE_SCENARIO_ASPECTS_LINES_JSON_PATH)
 LINES_OUTPUT_FORMULAS: List[Dict[str, str]] = [line["output_formula"] for line in LINES.values()]
 
 # Load the aspects from the JSON file :
@@ -79,9 +79,7 @@ class ProspectiveScenarioGraph(BaseGraph):
 
     def _get_y_historic_line(self, process_data: Dict[str, Any]) -> Series:
         """
-        Get the y-values of the historic line.
-
-        This method is used to calculate the y-values of the historic line from the process data.
+        Get the y-values of the historic line from the process data.
 
         #### Arguments :
         - `process_data (Dict[str, Any])` : The process data containing the necessary information to calculate the historic line data.
@@ -97,9 +95,7 @@ class ProspectiveScenarioGraph(BaseGraph):
 
     def _get_y_prospective_lines(self, process_data: Dict[str, Any]) -> List[Series]:
         """
-        Get the y-values of the prospective lines.
-
-        This method is used to calculate the y-values of the prospective lines from the process data.
+        Get the y-values of the prospective lines from the process data.
 
         #### Arguments :
         - `process_data (Dict[str, Any])` : The process data containing the necessary information to calculate the prospective lines data.
@@ -115,9 +111,7 @@ class ProspectiveScenarioGraph(BaseGraph):
 
     def _get_y_aspects_areas(self, process_data: Dict[str, Any]) -> List[Series]:
         """
-        Get the y-values of the aspects areas.
-
-        This method is used to calculate the y-values of the aspects areas from the process data.
+        Get the y-values of the aspects areas from the process data.
 
         #### Arguments :
         - `process_data (Dict[str, Any])` : The process data containing the necessary information to calculate the aspects areas data.
@@ -139,7 +133,7 @@ class ProspectiveScenarioGraph(BaseGraph):
             override: bool = False
         ) -> Figure:
         """
-        Create **initial** figure with historical, prospective, and aspects areas.
+        Create **initial** figure with the historical, prospective, and aspects areas.
 
         If the figure is already drawn and you just want to update the data, it is recommended to use the `update()` method instead.
         This method will not redraw the figure but will update the lines' data only.
@@ -155,8 +149,7 @@ class ProspectiveScenarioGraph(BaseGraph):
         - `Figure` : The initial figure with historical, prospective, and aspects areas plotted.
         """
         # Check is the figure is already drawn and if override is set to False :
-        if self.figure is not None and not override :
-            return self.update(process_data)
+        super().draw(process_data, override)
 
         # Extract the years from the process_data :
         years: Dict[str, List[int]]   = get_years(process_data)
@@ -281,19 +274,8 @@ class ProspectiveScenarioGraph(BaseGraph):
 
 
     def update(self, process_data: Dict[str, Any]) -> Figure:
-        """
-        Update lines' data only, avoiding full redraw.
-        This method updates the existing figure with new data without redrawing the entire figure.
-
-        #### Arguments :
-        - `process_data (Dict[str, Any])` : New processed data to update the figure.
-
-        #### Returns :
-        - `Figure` : The updated figure object with new data.
-        """
         # Check if the figure is already drawn :
-        if self.figure is None:
-            return self.draw(process_data, override = True)
+        super().update(process_data)
 
         # Update the figure :
         with self.figure.hold_sync():
@@ -301,13 +283,13 @@ class ProspectiveScenarioGraph(BaseGraph):
             
             y_prospective_lines = self._get_y_prospective_lines(process_data)
             # Update the y-axis of the prospective lines (updating the x-axis is not necessary as it remains constant) :
-            self._prospective_lines.y = y_prospective_lines
+            self._prospective_lines.y = [y_prospective_line.tolist() for y_prospective_line in y_prospective_lines] # Use of the ".tolist()" method to force a BQPlot update of the data.
             # Update the y-axis of the text of the prospective labels (updating the x-axis is not necessary as it remains constant) :
             self._prospective_labels.y = [serie.iloc[-1] for serie in y_prospective_lines]
             # Update the text content of the text of the prospective labels :
             self._prospective_labels.text = [format_final_value(value) for value in self._prospective_labels.y]
             
             # Update the y-axis of the aspects areas (updating the x-axis is not necessary as it remains constant) :
-            self._aspects_areas.y = self._get_y_aspects_areas(process_data)
+            self._aspects_areas.y = [y_aspect_area.tolist() for y_aspect_area in self._get_y_aspects_areas(process_data)] # Use of the ".tolist()" method to force a BQPlot update of the data.
 
         return self.figure

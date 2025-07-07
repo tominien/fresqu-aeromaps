@@ -1,47 +1,91 @@
 from typing import Any, Dict, List, Optional
 
-from bqplot import Figure, Bars, Axis, OrdinalScale, LinearScale
+from bqplot import Figure, Bars, Axis, LinearScale, OrdinalScale
 from bqplot_figures.base_graph import BaseGraph
 
-from core.aeromaps_utils.TEMPORARY_FILE_multidisciplinary_graph_utils import M_plot_budgets
+from ipywidgets import HBox, HTML, Label, Layout
+
+from crud.crud_multidisciplinary_bars import get_bars, get_bars_names
+
+from core.aeromaps_utils.evaluate_expression import evaluate_expression_aeromaps
+
+from utils import generate_pastel_palette
 
 
 
 
-CATEGORIES_NAMES = [
-    "ERF (CO₂ et non-CO₂)",
-    "Émissions de CO₂",
-    "Biomasse",
-    "Électricité"
-]
+# Load the bars from the JSON file :
+BARS                                                   = get_bars()
+BARS_NAMES: List[str]                                  = get_bars_names()
+BARS_BUDGET_OUTPUT_FORMULAS: List[Dict[str, str]]      = [line["output_formula_BUDGET"] for line in BARS.values()]
+BARS_CONSUMPTION_OUTPUT_FORMULAS: List[Dict[str, str]] = [line["output_formula_CONSUMPTION"] for line in BARS.values()]
 
 
 class MultidisciplinaryGraph(BaseGraph):
     """
-    Graph class for multidisciplinary data visualization.
+    Graph class for displaying multidisciplinary assessment data.
 
     Implements the `draw()` and `update()` methods.
 
     #### Arguments :
     - `figure_title (str)` : Title of the figure.
-    - `color_palette (Optional[List[str]])` : Optional list of **4** colors for the graph.
+    - `color_palette (Optional[List[str]])` : Optional list of **2** colors for the graph. The color order applies the following logic :
+        - Index 0 : Color for the budget bars.
+        - Index 1 : Color for the consumption bars.
     """
     def __init__(
             self,
             figure_title: str,
             color_palette: Optional[List[str]] = None
-        ) -> None:
+            ) -> None:
         super().__init__()
 
         self.figure_title = figure_title
-        self.color_palette = (
-            color_palette
-            if (color_palette and len(color_palette) == 4)
-            else ["#FFA500"] * 4
-        )
+        self.color_palette = color_palette if color_palette is not None else generate_pastel_palette(2)
 
         # Placeholders for marks :
-        self._categories: Bars = None
+        self._budget_bars: Bars      = None
+        self._consumption_bars: Bars = None
+
+
+    def _get_y_budget_bars(self, process_data: Dict[str, Any]) -> List[float]:
+        """
+        Get the y-values for the budget bars from the process data.
+
+        #### Arguments :
+        - `process_data (Dict[str, Any])` : The process data containing the necessary information to calculate the budget data.
+
+        #### Returns :
+        - `List[float]` : A list of floats containing the y-values for the budget bars.
+        """
+        return [
+            evaluate_expression_aeromaps(
+                process_data,
+                bar_budget_output_formula["expression"],
+                bar_budget_output_formula["year_range"] if "year_range" in bar_budget_output_formula.keys() else None
+            )
+            for bar_budget_output_formula in BARS_BUDGET_OUTPUT_FORMULAS
+        ]
+
+
+    def _get_y_consumption_bars(self, process_data: Dict[str, Any]) -> List[float]:
+        """
+        Get the y-values for the consumption bars from the process data.
+
+        #### Arguments :
+        - `process_data (Dict[str, Any])` : The process data containing the necessary information to calculate the consumption data.
+
+        #### Returns :
+        - `List[float]` : A list of floats containing the y-values for the consumption bars.
+        """
+        return [
+            evaluate_expression_aeromaps(
+                process_data,
+                bar_consumption_output_formula["expression"],
+                bar_consumption_output_formula["year_range"] if "year_range" in bar_consumption_output_formula.keys() else None
+            )
+            for bar_consumption_output_formula in BARS_CONSUMPTION_OUTPUT_FORMULAS
+        ]
 
 
     def draw(
@@ -50,7 +94,7 @@ class MultidisciplinaryGraph(BaseGraph):
             override: bool = False
         ) -> Figure:
         """
-        Create **initial** figure with the multidisciplinary data.
+        create **initial** figure with the budget and consumption bars.
 
         If the figure is already drawn and you just want to update the data, it is recommended to use the `update()` method instead.
         This method will not redraw the figure but will update the lines' data only.
@@ -59,22 +103,22 @@ class MultidisciplinaryGraph(BaseGraph):
         This action takes more time and resources to execute.
 
         #### Arguments :
-        - `process_data (Dict[str, Any])` : Data dictionary containing the necessary data for plotting the initial graph.
-        - `override (bool)` : If `True`, forces a redraw of the figure, even if it has already been drawn. Defaults to `False`.
+        - `process_data (Dict[str, Any])` : The process data containing the necessary information to create the figure.
+        - `override (bool)` : If set to `True`, the method will redraw the figure even if it is already drawn. Default is `False`.
 
         #### Returns :
-        - `Figure` : The initial figure with the multidisciplinary data plotted.
+        - `Figure` : The created or updated figure with the budget and consumption bars.
         """
         # Check is the figure is already drawn and if override is set to False :
-        if self.figure is not None and not override :
-            return self.update(process_data)
+        super().draw(process_data, override)
 
         # Create scales and axes :
         x_scale = OrdinalScale()
         y_scale = LinearScale()
         x_axis = Axis(
             scale = x_scale,
-            tick_style = {"font-weight": "bold"}
+            label = "Catégories",
+            label_offset = "40px"
         )
         y_axis = Axis(
             scale = y_scale,
@@ -84,44 +128,117 @@ class MultidisciplinaryGraph(BaseGraph):
             label_offset = "40px"
         )
 
-        # Plot the categories :
-        categories_y_bars = M_plot_budgets(process_data)
-        self._categories = Bars(
-            x = CATEGORIES_NAMES,
-            y = categories_y_bars,
-            scales = {"x": x_scale, "y": y_scale},
-            colors = self.color_palette,
-            display_legend = False
+        # Plot the budget bars :
+        y_budget_bars = self._get_y_budget_bars(process_data)
+
+        self._budget_bars = Bars(
+            x = BARS_NAMES,
+            y = y_budget_bars,
+            colors = [self.color_palette[0]],
+            opacities = [0.5] * len(BARS_NAMES),
+            labels = ["Budgets"],
+            offset = 0.2,
+            scales = {"x": x_scale, "y": y_scale}
         )
 
-        # Create the figure with the categories :
+        # plot the consumption bars :
+        y_consumption_bars = self._get_y_consumption_bars(process_data)
+
+        self._consumption_bars = Bars(
+            x = BARS_NAMES,
+            y = y_consumption_bars,
+            colors = [self.color_palette[1]],
+            opacities = [0.5] * len(BARS_NAMES),
+            labels = ["Consommations"],
+            offset = 0.2,
+            scales = {"x": x_scale, "y": y_scale}
+        )
+
+        # Create the figure with all marks, axes and the legend :
         self.figure = Figure(
-            marks = [self._categories],
+            marks = [
+                self._budget_bars,
+                self._consumption_bars
+            ],
             axes = [x_axis, y_axis],
             title = self.figure_title,
-            animation_duration = 1000
+            animation_duration = 1000,
+            legend_location = "bottom",
+            legend_columns = 2,
+            legend_style = {"stroke-width": 0}
         )
 
         return self.figure
 
 
     def update(self, process_data: Dict[str, Any]) -> Figure:
-        """
-        Update lines' data only, avoiding full redraw.
-        This method updates the existing figure with new data without redrawing the entire figure.
-
-        #### Arguments :
-        - `process_data (Dict[str, Any])` : New processed data to update the figure.
-
-        #### Returns :
-        - `Figure` : The updated figure object with new data.
-        """
         # Check if the figure is already drawn :
-        if self.figure is None:
-            return self.draw(process_data, override = True)
+        super().update(process_data)
 
-        # Update the categories data :
-        with self._categories.hold_sync():
-            self._categories.y = M_plot_budgets(process_data)
+        # Update the figure :
+        with self.figure.hold_sync():
+            # Update the y-axis of the budget bars :
+            self._budget_bars.y = self._get_y_budget_bars(process_data)
+
+            # Update the y-axis of the consumption bars :
+            self._consumption_bars.y = self._get_y_consumption_bars(process_data)
 
         return self.figure
+
+
+    def get_legend(self) -> HBox:
+        """
+        Draws the legend of the figure.
+
+        #### Returns :
+        - `HBox` : A horizontal box containing the labels of the budget and consumption bars.
+        """
+        # Check if the figure is already drawn :
+        if not self.figure:
+            raise ValueError("The figure is not drawn yet. Please call the `draw()` method first.")
+
+        # Get the legend elements :
+        colors = [
+            self._budget_bars.colors[0],
+            self._consumption_bars.colors[0]
+        ]
+        labels = [
+            self._budget_bars.labels[0],
+            self._consumption_bars.labels[0]
+        ]
+
+        # Create the legend items :
+        legend_items = []
+        for color, label in zip(colors, labels):
+            # Add a colored square and a label to the legend items :
+            legend_items.append(
+                HTML(
+                    value = f"<span style = 'display: inline-block; width: 12px; height: 12px; background-color: {color}'></span>"
+                )
+            )
+            legend_items.append(
+                Label(
+                    value = label,
+                    layout = Layout(
+                        margin = "0 12px 0 12px"
+                    )
+                )
+            )
+
+            # Space the legend items :
+            if label != labels[-1]:
+                legend_items.append(
+                    HTML(
+                        value = "<span style = 'width: 48px; display: inline-block'></span>"
+                    )
+                )
+
+        # Create the horizontal box for the legend :
+        return HBox(
+            children = legend_items,
+            layout = Layout(
+                justify_content = "center",
+                width = "100%",
+                margin = "-12px 0 0 48px"
+            )
+        )

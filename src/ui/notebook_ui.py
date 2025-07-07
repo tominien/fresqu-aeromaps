@@ -7,6 +7,7 @@ from core.aeromaps_utils.process_engine import ProcessEngine
 from bqplot import Figure
 from bqplot_figures.base_graph import BaseGraph
 from bqplot_figures.prospective_scenario_graph import ProspectiveScenarioGraph
+from bqplot_figures.multidisciplinary_graph_old import MultidisciplinaryGraphOld
 from bqplot_figures.multidisciplinary_graph import MultidisciplinaryGraph
 
 from ipywidgets import VBox, HBox, Layout, AppLayout, Checkbox, Button, HTML
@@ -137,7 +138,7 @@ def draw_prospective_scenario_graphs(
 def draw_multidisciplinary_graphs(
     multidisciplinary_graphs: List[MultidisciplinaryGraph],
     process_engines_data: List[List[dict]]
-) -> List[Figure]:
+) -> List[VBox]:
     """
     Draws the multidisciplinary graphs for each group.
 
@@ -146,25 +147,37 @@ def draw_multidisciplinary_graphs(
     - `process_engines_data` : A list of computed data for each process engine.
 
     #### Returns :
-    - `List[Figure]` : A list of drawn figures for each multidisciplinary graph.
+    - `List[VBox]` : A list of drawn widgets for each multidisciplinary graph.
     """
-    figures = []
+    widgets = []
 
     # Draw each multidisciplinary graph with the corresponding data :
     for graph, data in zip(multidisciplinary_graphs, process_engines_data):
         figure        = graph.draw(data)
-        figure.layout = Layout(width = "50%")
-        figures.append(figure)
+        figure.layout = Layout(width = "100%")
+        figure_legend = graph.get_legend()
 
-    return figures
+        # Create a VBox to contain the figure and its legend :
+        widgets.append(
+            VBox(
+                [figure, figure_legend],
+                layout = Layout(
+                    width = "50%",
+                    overflow = "hidden",
+                    align_items = "center"
+                )
+            )
+        )
+
+    return widgets
 
 
 def update_figures(
-    _button:         Button,
+    _button: Button,
     number_of_groups: int,
     process_engines: List[ProcessEngine],
-    checkboxes_lists:   List[List[Checkbox]],
-    graphs:          Dict[str, List[BaseGraph]]
+    checkboxes_lists: List[List[Checkbox]],
+    graphs: Dict[str, List[BaseGraph]]
 ) -> None:
     """
     Updates the figures based on the selected checkboxes and the process engines.
@@ -247,7 +260,7 @@ def draw_interface(number_of_groups: int) -> VBox:
     Multidisciplinary graphs initialization :
     """
     # Initialize the reference multidisciplinary graph :
-    reference_multidisciplinary_graph         = MultidisciplinaryGraph("Scénario de référence")
+    reference_multidisciplinary_graph         = MultidisciplinaryGraphOld("Scénario de référence")
     reference_multidisciplinary_figure        = reference_multidisciplinary_graph.draw(reference_process_engine_data)
     reference_multidisciplinary_figure.layout = Layout(width = "50%")
 
@@ -270,7 +283,12 @@ def draw_interface(number_of_groups: int) -> VBox:
 
     prospective_scenario_boxes = [
         AppLayout(
-            left_sidebar = VBox(checkboxes_lists[index]),
+            left_sidebar = VBox(
+                checkboxes_lists[index],
+                layout = Layout(
+                    margin = "0 0 0 25px"
+                )
+            ),
             center = figure,
             align_items = "center",
             width = "100%"

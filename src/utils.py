@@ -7,11 +7,13 @@ import colorsys
 
 ROOT_DIRECTORY_PATH = Path(__file__).resolve().parents[1]
 
-CARDS_JSON_PATH   = ROOT_DIRECTORY_PATH / "data" / "cards" / "cards.json"
+CARDS_JSON_PATH = ROOT_DIRECTORY_PATH / "data" / "cards" / "cards.json"
 
-ASPECTS_JSON_PATH = ROOT_DIRECTORY_PATH / "data" / "aspects" / "aspects.json"
+PROSPECTIVE_SCENARIO_ASPECTS_AREAS_JSON_PATH = ROOT_DIRECTORY_PATH / "data" / "prospective_scenario_graph" / "prospective_scenario_aspects_areas.json"
 
-LINES_JSON_PATH   = ROOT_DIRECTORY_PATH / "data" / "aspects" / "prospective_scenario_lines.json"
+PROSPECTIVE_SCENARIO_ASPECTS_LINES_JSON_PATH = ROOT_DIRECTORY_PATH / "data" / "prospective_scenario_graph" / "prospective_scenario_aspects_lines.json"
+
+MULTIDISCIPLINARY_BARS_JSON_PATH = ROOT_DIRECTORY_PATH / "data" / "multidisciplinary_graph" / "multidisciplinary_bars.json"
 
 
 def generate_pastel_palette(number_of_colors: int) -> list[str]:
@@ -28,7 +30,7 @@ def generate_pastel_palette(number_of_colors: int) -> list[str]:
         return []
 
     # Initialize the color palette :
-    palette = []
+    palette    = []
     saturation = 0.8
     hsv_value  = 0.75
 

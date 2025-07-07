@@ -1,0 +1,40 @@
+{
+    "total_emissions_BAR": {
+        "name": "Émissions totales",
+        "output_formula_BUDGET": {
+            "expression": "float_outputs('aviation_equivalent_carbon_budget') / float_outputs('equivalent_gross_carbon_budget_2050') * 100"
+        },
+        "output_formula_CONSUMPTION": {
+            "expression": "max(climate_outputs('cumulative_total_equivalent_emissions') / float_outputs('equivalent_gross_carbon_budget_2050') * 100, 0)",
+            "year_range": 2050
+        }
+    },
+    "CO2_emissions_BAR": {
+        "name": "Émissions de CO₂",
+        "output_formula_BUDGET": {
+            "expression": "float_outputs('aviation_carbon_budget') / float_outputs('gross_carbon_budget_2050') * 100"
+        },
+        "output_formula_CONSUMPTION": {
+            "expression": "vector_outputs('cumulative_co2_emissions') / float_outputs('gross_carbon_budget_2050') * 100",
+            "year_range": 2050
+        }
+    },
+    "biomass_BAR": {
+        "name": "Biomasse",
+        "output_formula_BUDGET": {
+            "expression": "float_outputs('aviation_available_biomass') / float_outputs('available_biomass_total') * 100"
+        },
+        "output_formula_CONSUMPTION": {
+            "expression": "float_outputs('biomass_consumption_end_year') / float_outputs('available_biomass_total') * 100"
+        }
+    },
+    "electricity_BAR": {
+        "name": "Électricité",
+        "output_formula_BUDGET": {
+            "expression": "float_outputs('aviation_available_electricity') / float_inputs('available_electricity') * 100"
+        },
+        "output_formula_CONSUMPTION": {
+            "expression": "float_outputs('electricity_consumption_end_year') / float_inputs('available_electricity') * 100"
+        }
+    }
+}

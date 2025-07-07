@@ -1,18 +1,18 @@
 from typing import Dict, List, Any
 
-from utils import ASPECTS_JSON_PATH
+from utils import PROSPECTIVE_SCENARIO_ASPECTS_AREAS_JSON_PATH
 
 import json
 
 
 
 
-def _load_aspects(path: str = ASPECTS_JSON_PATH) -> Dict[str, Dict[str, Any]]:
+def _load_aspects(path: str = PROSPECTIVE_SCENARIO_ASPECTS_AREAS_JSON_PATH) -> Dict[str, Dict[str, Any]]:
     with open(path, "r", encoding = "utf-8") as file:
         return json.load(file)
 
 
-def get_aspects(path: str = ASPECTS_JSON_PATH) -> Dict[str, Dict[str, Any]]:
+def get_aspects(path: str = PROSPECTIVE_SCENARIO_ASPECTS_AREAS_JSON_PATH) -> Dict[str, Dict[str, Any]]:
     """
     Returns the dictionary of aspects.
 
@@ -23,7 +23,7 @@ def get_aspects(path: str = ASPECTS_JSON_PATH) -> Dict[str, Dict[str, Any]]:
     return aspects
 
 
-def get_aspects_names(path: str = ASPECTS_JSON_PATH) -> List[str]:
+def get_aspects_names(path: str = PROSPECTIVE_SCENARIO_ASPECTS_AREAS_JSON_PATH) -> List[str]:
     """
     Returns the list of aspect names.
 
