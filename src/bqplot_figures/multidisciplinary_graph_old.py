@@ -1,9 +1,11 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Tuple, Optional
+
+from pandas import DataFrame
 
 from bqplot import Figure, Bars, Axis, OrdinalScale, LinearScale
 from bqplot_figures.base_graph import BaseGraph
 
-from core.aeromaps_utils.TEMPORARY_FILE_multidisciplinary_graph_utils import M_plot_budgets
+from core.aeromaps_utils.extract_processed_data import get_dataframe_vector_outputs, get_dataframe_climate_outputs
 
 
 
@@ -14,6 +16,67 @@ CATEGORIES_NAMES = [
     "Biomasse",
     "Électricité"
 ]
+
+
+def M_plot_consumptions(process_data: Dict[str, Any]) -> List[float]:
+    float_inputs  = process_data["float_inputs"]
+    float_outputs = process_data["float_outputs"]
+    DF_vector_outputs: DataFrame  = get_dataframe_vector_outputs(process_data)
+    DF_climate_outputs: DataFrame = get_dataframe_climate_outputs(process_data)
+
+    # Budget carbone :
+    gross_carbon_budget      = float(float_outputs["gross_carbon_budget_2050"])
+    cumulative_co2_emissions = float(DF_vector_outputs.loc[2050, "cumulative_co2_emissions"])
+
+    # Biomasse :
+    available_biomass_total      = float_outputs["available_biomass_total"]
+    biomass_consumption_end_year = float_outputs["biomass_consumption_end_year"]
+
+    # Électricité :
+    available_electricity_total      = float_inputs["available_electricity"]
+    electricity_consumption_end_year = float_outputs["electricity_consumption_end_year"]
+
+    # Forçage radiatif effectif :
+    equivalent_gross_carbon_budget        = float(float_outputs["equivalent_gross_carbon_budget_2050"])
+    cumulative_total_equivalent_emissions = float(DF_climate_outputs.loc[2050, "cumulative_total_equivalent_emissions"])
+
+    return [
+        max(
+            cumulative_total_equivalent_emissions / equivalent_gross_carbon_budget * 100,
+            0
+        ),
+        cumulative_co2_emissions / gross_carbon_budget * 100,
+        biomass_consumption_end_year / available_biomass_total * 100,
+        electricity_consumption_end_year / available_electricity_total * 100
+    ]
+
+
+def M_plot_budgets(process_data: Dict[str, Any]) -> List[List[float]]:
+    float_inputs  = process_data["float_inputs"]
+    float_outputs = process_data["float_outputs"]
+
+    # Budget carbone :
+    gross_carbon_budget    = float(float_outputs["gross_carbon_budget_2050"])
+    aviation_carbon_budget = float(float_outputs["aviation_carbon_budget"])
+
+    # Biomasse :
+    available_biomass_total    = float_outputs["available_biomass_total"]
+    aviation_available_biomass = float_outputs["aviation_available_biomass"]
+
+    # Électricité :
+    available_electricity_total    = float_inputs["available_electricity"]
+    aviation_available_electricity = float_outputs["aviation_available_electricity"]
+
+    # Forçage radiatif effectif :
+    equivalent_gross_carbon_budget    = float(float_outputs["equivalent_gross_carbon_budget_2050"])
+    aviation_equivalent_carbon_budget = float(float_outputs["aviation_equivalent_carbon_budget"])
+
+    return [
+        aviation_equivalent_carbon_budget / equivalent_gross_carbon_budget * 100,
+        aviation_carbon_budget / gross_carbon_budget * 100,
+        aviation_available_biomass / available_biomass_total * 100,
+        aviation_available_electricity / available_electricity_total * 100
+    ]
 
 
 class MultidisciplinaryGraphOld(BaseGraph):
@@ -47,7 +110,8 @@ class MultidisciplinaryGraphOld(BaseGraph):
     def draw(
             self,
             process_data: Dict[str, Any],
-            override: bool = False
+            override: bool = False,
+            display_default_legend: bool = True
         ) -> Figure:
         """
         Create **initial** figure with the multidisciplinary data.
@@ -61,6 +125,7 @@ class MultidisciplinaryGraphOld(BaseGraph):
         #### Arguments :
         - `process_data (Dict[str, Any])` : Data dictionary containing the necessary data for plotting the initial graph.
         - `override (bool)` : If `True`, forces a redraw of the figure, even if it has already been drawn. Defaults to `False`.
+        - `display_default_legend (bool)` : If set to `True`, the default legend will be displayed. Defaults to `True`.
 
         #### Returns :
         - `Figure` : The initial figure with the multidisciplinary data plotted.
@@ -91,7 +156,8 @@ class MultidisciplinaryGraphOld(BaseGraph):
             y = categories_y_bars,
             scales = {"x": x_scale, "y": y_scale},
             colors = self.color_palette,
-            display_legend = False
+            labels = ["Budgets"],
+            display_legend = display_default_legend
         )
 
         # Create the figure with the categories :
@@ -99,7 +165,9 @@ class MultidisciplinaryGraphOld(BaseGraph):
             marks = [self._categories],
             axes = [x_axis, y_axis],
             title = self.figure_title,
-            animation_duration = 1000
+            animation_duration = 1000,
+            legend_location = "top-right",
+            legend_style = {"stroke-width": 0}
         )
 
         return self.figure
@@ -125,3 +193,13 @@ class MultidisciplinaryGraphOld(BaseGraph):
             self._categories.y = M_plot_budgets(process_data)
 
         return self.figure
+
+    def get_legend_elements(self) -> Tuple[List[str], List[str]]:
+        # Check if the figure is already drawn :
+        super().get_legend_elements()
+
+        # Get the legend elements :
+        colors = self._categories.colors
+        labels = self._categories.labels
+
+        return colors, labels

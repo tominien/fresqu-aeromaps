@@ -1,9 +1,7 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Tuple, Optional
 
 from bqplot import Figure, Bars, Axis, LinearScale, OrdinalScale
 from bqplot_figures.base_graph import BaseGraph
-
-from ipywidgets import HBox, HTML, Label, Layout
 
 from crud.crud_multidisciplinary_bars import get_bars, get_bars_names
 
@@ -19,6 +17,33 @@ BARS                                                   = get_bars()
 BARS_NAMES: List[str]                                  = get_bars_names()
 BARS_BUDGET_OUTPUT_FORMULAS: List[Dict[str, str]]      = [line["output_formula_BUDGET"] for line in BARS.values()]
 BARS_CONSUMPTION_OUTPUT_FORMULAS: List[Dict[str, str]] = [line["output_formula_CONSUMPTION"] for line in BARS.values()]
+
+
+def get_multidisciplinary_graphs_y_scales(processes_data: List[Dict[str, Any]]) -> Tuple[float, float]:
+    """
+    Get the minimal and maximal values of all the y-scales for the budget and consumption bars from multiple processes data.
+
+    #### Arguments :
+    - `processes_data (List[Dict[str, Any]])` : A list of processes data from AéroMAPS.
+
+    #### Returns :
+    - `Tuple[float]` : A tuple containing the minimal and maximal values of all the y-scales for the budget and consumption bars.
+    """
+    # Create a temporary MultidisciplinaryGraph instance to access the methods :
+    temp_graph = MultidisciplinaryGraph("Temporary Graph")
+
+    # Get the y-values for the budget and consumption bars from all processes data :
+    all_y_lines = []
+    for process_data in processes_data:
+        # Get the y-values for the budget bars :
+        y_budget_bars = temp_graph._get_y_budget_bars(process_data)
+        all_y_lines.extend(y_budget_bars)
+
+        # Get the y-values for the consumption bars :
+        y_consumption_bars = temp_graph._get_y_consumption_bars(process_data)
+        all_y_lines.extend(y_consumption_bars)
+
+    return (min(all_y_lines), max(all_y_lines)) if all_y_lines else (0.0, 0.0)
 
 
 class MultidisciplinaryGraph(BaseGraph):
@@ -91,7 +116,9 @@ class MultidisciplinaryGraph(BaseGraph):
     def draw(
             self,
             process_data: Dict[str, Any],
-            override: bool = False
+            y_scale: LinearScale = None,
+            override: bool = False,
+            display_default_legend: bool = True
         ) -> Figure:
         """
         create **initial** figure with the budget and consumption bars.
@@ -104,7 +131,9 @@ class MultidisciplinaryGraph(BaseGraph):
 
         #### Arguments :
         - `process_data (Dict[str, Any])` : The process data containing the necessary information to create the figure.
-        - `override (bool)` : If set to `True`, the method will redraw the figure even if it is already drawn. Default is `False`.
+        - `y_scale (LinearScale)` : Optional scale for the y-axis. If not provided, a default scale will be created.
+        - `override (bool)` : If set to `True`, the method will redraw the figure even if it is already drawn. Defaults to `False`.
+        - `display_default_legend (bool)` : If set to `True`, the default legend will be displayed. Defaults to `True`.
 
         #### Returns :
         - `Figure` : The created or updated figure with the budget and consumption bars.
@@ -114,7 +143,7 @@ class MultidisciplinaryGraph(BaseGraph):
 
         # Create scales and axes :
         x_scale = OrdinalScale()
-        y_scale = LinearScale()
+        y_scale = y_scale or LinearScale()
         x_axis = Axis(
             scale = x_scale,
             label = "Catégories",
@@ -137,6 +166,7 @@ class MultidisciplinaryGraph(BaseGraph):
             colors = [self.color_palette[0]],
             opacities = [0.5] * len(BARS_NAMES),
             labels = ["Budgets"],
+            display_legend = display_default_legend,
             offset = 0.2,
             scales = {"x": x_scale, "y": y_scale}
         )
@@ -150,6 +180,7 @@ class MultidisciplinaryGraph(BaseGraph):
             colors = [self.color_palette[1]],
             opacities = [0.5] * len(BARS_NAMES),
             labels = ["Consommations"],
+            display_legend = display_default_legend,
             offset = 0.2,
             scales = {"x": x_scale, "y": y_scale}
         )
@@ -163,8 +194,7 @@ class MultidisciplinaryGraph(BaseGraph):
             axes = [x_axis, y_axis],
             title = self.figure_title,
             animation_duration = 1000,
-            legend_location = "bottom",
-            legend_columns = 2,
+            legend_location = "top-right",
             legend_style = {"stroke-width": 0}
         )
 
@@ -186,59 +216,12 @@ class MultidisciplinaryGraph(BaseGraph):
         return self.figure
 
 
-    def get_legend(self) -> HBox:
-        """
-        Draws the legend of the figure.
-
-        #### Returns :
-        - `HBox` : A horizontal box containing the labels of the budget and consumption bars.
-        """
+    def get_legend_elements(self) -> Tuple[List[str], List[str]]:
         # Check if the figure is already drawn :
-        if not self.figure:
-            raise ValueError("The figure is not drawn yet. Please call the `draw()` method first.")
+        super().get_legend_elements()
 
         # Get the legend elements :
-        colors = [
-            self._budget_bars.colors[0],
-            self._consumption_bars.colors[0]
-        ]
-        labels = [
-            self._budget_bars.labels[0],
-            self._consumption_bars.labels[0]
-        ]
+        colors = self._budget_bars.colors + self._consumption_bars.colors
+        labels = self._budget_bars.labels + self._consumption_bars.labels
 
-        # Create the legend items :
-        legend_items = []
-        for color, label in zip(colors, labels):
-            # Add a colored square and a label to the legend items :
-            legend_items.append(
-                HTML(
-                    value = f"<span style = 'display: inline-block; width: 12px; height: 12px; background-color: {color}'></span>"
-                )
-            )
-            legend_items.append(
-                Label(
-                    value = label,
-                    layout = Layout(
-                        margin = "0 12px 0 12px"
-                    )
-                )
-            )
-
-            # Space the legend items :
-            if label != labels[-1]:
-                legend_items.append(
-                    HTML(
-                        value = "<span style = 'width: 48px; display: inline-block'></span>"
-                    )
-                )
-
-        # Create the horizontal box for the legend :
-        return HBox(
-            children = legend_items,
-            layout = Layout(
-                justify_content = "center",
-                width = "100%",
-                margin = "-12px 0 0 48px"
-            )
-        )
+        return colors, labels

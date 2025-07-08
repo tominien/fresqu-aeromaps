@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import List, Dict, Tuple, Any
 
 from abc import ABC, abstractmethod
 
@@ -77,5 +77,22 @@ class BaseGraph(ABC):
         # Check if the figure is already drawn :
         if self.figure is None:
             return self.draw(process_data, override = True)
+
+        ... # Implemented in the subclass.
+
+    @abstractmethod
+    def get_legend_elements(self) -> Tuple[List[str], List[str]]:
+        """
+        Get the legend elements of the figure.
+        Allows to retrieve the colors and labels of the graph's legend to create a custom legend.
+
+        #### Returns :
+        - `Tuple[List[str], List[str]]` : A tuple containing two lists:
+            - The first list contains the colors of the legend elements.
+            - The second list contains the labels of the legend elements.
+        """
+        # Check if the figure is already drawn :
+        if not self.figure:
+            raise ValueError("The figure is not drawn yet. Please call the `draw()` method first.")
 
         ... # Implemented in the subclass.

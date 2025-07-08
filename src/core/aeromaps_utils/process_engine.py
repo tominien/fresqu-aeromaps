@@ -1,12 +1,14 @@
 from typing import Dict, List, Any, Optional
 
-from crud.crud_cards import get_cards_ids
+import copy
 
 from functools import lru_cache
 
 from aeromaps import create_process
 from aeromaps.core.process import AeroMAPSProcess
 from aeromaps.models.parameters import Parameters
+
+from crud.crud_cards import get_cards_ids
 
 
 
@@ -94,7 +96,7 @@ def compute_process(
     parameters.biofuel_ft_others_share_reference_years_values   = [0.0, 0.0, 76.3, 76.3]
     parameters.biofuel_ft_msw_share_reference_years             = [2020, 2030, 2040, 2050]
     parameters.biofuel_ft_msw_share_reference_years_values      = [0.0, 0.0, 7.4, 7.4]
-        # Emission factors for electricity (2019 value: 429 gCO2/kWh) :
+        # Emission factors for electricity (2019 value: 429 gCO₂/kWh) :
     parameters.electricity_emission_factor_reference_years        = [2020, 2030, 2040, 2050]
     parameters.electricity_emission_factor_reference_years_values = [429.0, 200.0, 100.0, 30.0]
         # Share of hydrogen production pathways (the rest being completed by production via coal without CCS, distribution in 2019: Gas without CCS (71%), Coal without CCS (27%), Electrolysis (2%), Others with CCS (0%), Co-products not taken into account) :
@@ -203,4 +205,6 @@ class ProcessEngine:
         #### Returns :
         - `dict [str, Any]` : The computed data from the AeroMAPS process.
         """
-        return compute_process(self.process, tuple(cards_ids) if cards_ids else None) # Converted to tuple for LRU cache compatibility
+        process_data = compute_process(self.process, tuple(cards_ids) if cards_ids else None) # Converted to tuple for LRU cache compatibility.
+
+        return copy.deepcopy(process_data)

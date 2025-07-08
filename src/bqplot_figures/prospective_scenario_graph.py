@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Tuple, Optional
 
 from pandas import Series, concat
 
@@ -26,6 +26,39 @@ ASPECTS_NAMES: List[str]                      = get_aspects_names()
 ASPECTS_OUTPUT_FORMULAS: List[Dict[str, str]] = [aspect["output_formula"] for aspect in ASPECTS.values()]
 
 
+def get_prospective_scenario_y_scales(processes_data: Dict[str, Any]) -> Tuple[float, float]:
+    """
+    Get the minimal and maximal values of all the y-scales for the historic line, prospective lines and aspects areas from multiple processes data.
+
+    #### Arguments :
+    - `processes_data (List[Dict[str, Any]])` : A list of processes data from AéroMAPS.
+
+    #### Returns :
+    - `Tuple[float]` : A tuple containing the minimal and maximal values of all the y-scales for the budget and consumption bars.
+    """
+    # Create a temporary ProspectiveScenarioGraph instance to access the methods :
+    temp_graph = ProspectiveScenarioGraph("Temporary Graph")
+
+    # Get the y-values for the historic line, prospective lines and aspects areas from all processes data :
+    all_y_lines = []
+    for process_data in processes_data:
+        # Get the y-values for the historic line :
+        y_historic_line = temp_graph._get_y_historic_line(process_data)
+        all_y_lines.extend(y_historic_line.tolist())
+
+        # Get the y-values for the prospective lines :
+        y_prospective_lines = temp_graph._get_y_prospective_lines(process_data)
+        for y_prospective_line in y_prospective_lines:
+            all_y_lines.extend(y_prospective_line.tolist())
+
+        # Get the y-values for the aspects areas :
+        y_aspects_areas = temp_graph._get_y_aspects_areas(process_data)
+        for y_aspect_area in y_aspects_areas:
+            all_y_lines.extend(y_aspect_area.tolist())
+
+    return (min(all_y_lines), max(all_y_lines)) if all_y_lines else (0.0, 0.0)
+
+
 def format_final_value(value: float) -> str:
     """
     Format the final value of a prospective line.
@@ -43,7 +76,7 @@ def format_final_value(value: float) -> str:
 
 class ProspectiveScenarioGraph(BaseGraph):
     """
-    Graph class for CO2 emissions prospectives.
+    Graph class for CO₂ emissions prospectives.
 
     Implements the `draw()` and `update()` methods.
 
@@ -130,7 +163,9 @@ class ProspectiveScenarioGraph(BaseGraph):
     def draw(
             self,
             process_data: Dict[str, Any],
-            override: bool = False
+            y_scale: LinearScale = None,
+            override: bool = False,
+            display_default_legend: bool = True
         ) -> Figure:
         """
         Create **initial** figure with the historical, prospective, and aspects areas.
@@ -143,7 +178,9 @@ class ProspectiveScenarioGraph(BaseGraph):
 
         #### Arguments :
         - `process_data (Dict[str, Any])` : Data dictionary containing the necessary data for plotting the initial graph.
+        - `y_scale (LinearScale)` : Optional scale for the y-axis. If not provided, a default scale will be created.
         - `override (bool)` : If `True`, forces a redraw of the figure, even if it has already been drawn. Defaults to `False`.
+        - `display_default_legend (bool)` : If `True`, the legend will be displayed. Defaults to `True`.
 
         #### Returns :
         - `Figure` : The initial figure with historical, prospective, and aspects areas plotted.
@@ -159,7 +196,7 @@ class ProspectiveScenarioGraph(BaseGraph):
 
         # Create scales and axes :
         x_scale = LinearScale()
-        y_scale = LinearScale()
+        y_scale = y_scale or LinearScale()
         x_axis = Axis(
             scale = x_scale,
             label = "Années",
@@ -169,7 +206,7 @@ class ProspectiveScenarioGraph(BaseGraph):
         y_axis = Axis(
             scale = y_scale,
             orientation = "vertical",
-            label = "Emissions de CO2, en Mt",
+            label = "Emissions de CO₂ (en Mt)",
             label_offset = "40px"
         )
 
@@ -182,7 +219,7 @@ class ProspectiveScenarioGraph(BaseGraph):
             y = y_historic_line,
             colors = colors_historic_line,
             labels = LINES_NAMES[0],
-            display_legend = True,
+            display_legend = display_default_legend,
             scales = {"x": x_scale, "y": y_scale}
         )
 
@@ -198,7 +235,7 @@ class ProspectiveScenarioGraph(BaseGraph):
                 LINES_NAMES[1],
                 LINES_NAMES[2]
             ],
-            display_legend = True,
+            display_legend = display_default_legend,
             line_style = "dashed",
             scales = {"x": x_scale, "y": y_scale}
         )
@@ -216,7 +253,7 @@ class ProspectiveScenarioGraph(BaseGraph):
             fill_colors = colors_aspects_areas,
             fill_opacities = [0.3] * len(colors_aspects_areas),
             labels = [*ASPECTS_NAMES, ""], # Empty label for the last area to avoid legend entry (corresponds to the "no aspects" line).
-            display_legend = True,
+            display_legend = display_default_legend,
             scales = {"x": x_scale, "y": y_scale}
         )
 
@@ -293,3 +330,14 @@ class ProspectiveScenarioGraph(BaseGraph):
             self._aspects_areas.y = [y_aspect_area.tolist() for y_aspect_area in self._get_y_aspects_areas(process_data)] # Use of the ".tolist()" method to force a BQPlot update of the data.
 
         return self.figure
+
+
+    def get_legend_elements(self) -> Tuple[List[str], List[str]]:
+        # Check if the figure is already drawn :
+        super().get_legend_elements()
+
+        # Get the legend elements :
+        colors = self._historic_line.colors + self._prospective_lines.colors + self._aspects_areas.colors
+        labels = self._historic_line.labels + self._prospective_lines.labels + self._aspects_areas.labels
+
+        return colors, labels
