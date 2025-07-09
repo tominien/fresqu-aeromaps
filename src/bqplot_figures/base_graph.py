@@ -80,16 +80,18 @@ class BaseGraph(ABC):
 
         ... # Implemented in the subclass.
 
+
     @abstractmethod
-    def get_legend_elements(self) -> Tuple[List[str], List[str]]:
+    def get_legend_elements(self) -> Tuple[List[str], List[str], List[str]]:
         """
         Get the legend elements of the figure.
         Allows to retrieve the colors and labels of the graph's legend to create a custom legend.
 
         #### Returns :
-        - `Tuple[List[str], List[str]]` : A tuple containing two lists:
+        - `Tuple[List[str], List[str]]` : A tuple containing three lists:
             - The first list contains the colors of the legend elements.
             - The second list contains the labels of the legend elements.
+            - The third list contains the opacities of the legend color elements.
         """
         # Check if the figure is already drawn :
         if not self.figure:

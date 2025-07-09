@@ -87,7 +87,7 @@ class MultidisciplinaryGraphOld(BaseGraph):
 
     #### Arguments :
     - `figure_title (str)` : Title of the figure.
-    - `color_palette (Optional[List[str]])` : Optional list of **4** colors for the graph.
+    - `color_palette (Optional[List[str]])` : Optional list of **1** color for the graph.
     """
     def __init__(
             self,
@@ -99,8 +99,8 @@ class MultidisciplinaryGraphOld(BaseGraph):
         self.figure_title = figure_title
         self.color_palette = (
             color_palette
-            if (color_palette and len(color_palette) == 4)
-            else ["#FFA500"] * 4
+            if (color_palette and len(color_palette) == 1)
+            else ["#FFA500"]
         )
 
         # Placeholders for marks :
@@ -194,12 +194,14 @@ class MultidisciplinaryGraphOld(BaseGraph):
 
         return self.figure
 
-    def get_legend_elements(self) -> Tuple[List[str], List[str]]:
+
+    def get_legend_elements(self) -> Tuple[List[str], List[str], List[str]]:
         # Check if the figure is already drawn :
         super().get_legend_elements()
 
         # Get the legend elements :
-        colors = self._categories.colors
-        labels = self._categories.labels
+        colors    = self._categories.colors
+        labels    = self._categories.labels
+        opacities = self._categories.opacities
 
-        return colors, labels
+        return colors, labels, opacities

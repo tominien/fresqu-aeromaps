@@ -69,8 +69,7 @@ class MultidisciplinaryGraph(BaseGraph):
         self.color_palette = color_palette if color_palette is not None else generate_pastel_palette(2)
 
         # Placeholders for marks :
-        self._budget_bars: Bars      = None
-        self._consumption_bars: Bars = None
+        self._bars: Bars = None
 
 
     def _get_y_budget_bars(self, process_data: Dict[str, Any]) -> List[float]:
@@ -157,40 +156,25 @@ class MultidisciplinaryGraph(BaseGraph):
             label_offset = "40px"
         )
 
-        # Plot the budget bars :
+        # Plot the consumptions and budgets bars :
+        y_consumption_bars = self._get_y_consumption_bars(process_data)
         y_budget_bars = self._get_y_budget_bars(process_data)
 
-        self._budget_bars = Bars(
+        self._bars = Bars(
             x = BARS_NAMES,
-            y = y_budget_bars,
-            colors = [self.color_palette[0]],
-            opacities = [0.5] * len(BARS_NAMES),
-            labels = ["Budgets"],
+            y = [y_consumption_bars, y_budget_bars],
+            type = "grouped",
+            colors = [self.color_palette[1], self.color_palette[0]],
+            opacities = [0.5] * len(self.color_palette),
+            labels = ["Consommations", "Budgets"],
             display_legend = display_default_legend,
-            offset = 0.2,
-            scales = {"x": x_scale, "y": y_scale}
-        )
-
-        # plot the consumption bars :
-        y_consumption_bars = self._get_y_consumption_bars(process_data)
-
-        self._consumption_bars = Bars(
-            x = BARS_NAMES,
-            y = y_consumption_bars,
-            colors = [self.color_palette[1]],
-            opacities = [0.5] * len(BARS_NAMES),
-            labels = ["Consommations"],
-            display_legend = display_default_legend,
-            offset = 0.2,
-            scales = {"x": x_scale, "y": y_scale}
+            padding = 0.1,
+            scales = {"x": x_scale, "y": y_scale},
         )
 
         # Create the figure with all marks, axes and the legend :
         self.figure = Figure(
-            marks = [
-                self._budget_bars,
-                self._consumption_bars
-            ],
+            marks = [self._bars],
             axes = [x_axis, y_axis],
             title = self.figure_title,
             animation_duration = 1000,
@@ -207,21 +191,22 @@ class MultidisciplinaryGraph(BaseGraph):
 
         # Update the figure :
         with self.figure.hold_sync():
-            # Update the y-axis of the budget bars :
-            self._budget_bars.y = self._get_y_budget_bars(process_data)
-
-            # Update the y-axis of the consumption bars :
-            self._consumption_bars.y = self._get_y_consumption_bars(process_data)
+            # Update the y-axis of the budget and consumption bars :
+            self._bars.y = [
+                self._get_y_consumption_bars(process_data),
+                self._get_y_budget_bars(process_data)
+            ]
 
         return self.figure
 
 
-    def get_legend_elements(self) -> Tuple[List[str], List[str]]:
+    def get_legend_elements(self) -> Tuple[List[str], List[str], List[str]]:
         # Check if the figure is already drawn :
         super().get_legend_elements()
 
         # Get the legend elements :
-        colors = self._budget_bars.colors + self._consumption_bars.colors
-        labels = self._budget_bars.labels + self._consumption_bars.labels
+        colors    = self._bars.colors
+        labels    = self._bars.labels
+        opacities = self._bars.opacities
 
-        return colors, labels
+        return colors, labels, opacities

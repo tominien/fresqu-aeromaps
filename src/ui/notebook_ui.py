@@ -198,35 +198,36 @@ def draw_multidisciplinary_graphs(
     - `List[VBox]` : A list of drawn widgets for each multidisciplinary graph.
     """
     # Create a wrapper function to draw the graphs' legends :
-    def draw_disciplinary_graph_legend(colors: List[str], labels: List[str]) -> HBox:
+    def draw_disciplinary_graph_legend(colors: List[str], labels: List[str], opacities: List[str]) -> HBox:
         """
         Draws the legend for the multidisciplinary graphs.
 
         #### Arguments :
         - `colors` : A list of colors for the legend items.
         - `labels` : A list of labels for the legend items.
+        - `opacities` : A list of opacities for the legend items colors.
 
         #### Returns :
         - `HBox` : A horizontal box containing the legend items.
         """
         # Check if the colors and labels lists are of the same length :
-        if len(colors) != len(labels):
-            raise ValueError("Les listes de couleurs et de labels doivent avoir la même longueur.")
+        if len(colors) != len(labels) or len(colors) != len(opacities):
+            raise ValueError("Les listes de couleurs, de labels et d'opacités doivent avoir la même longueur.")
 
         # Create the legend items :
         legend_items = []
-        for color, label in zip(colors, labels):
+        for color, label, alpha in zip(colors, labels, opacities):
             # Add a colored square and a label to the legend items :
             legend_items.append(
                 HTML(
-                    value = f"<span style = 'display: inline-block; width: 12px; height: 12px; background-color: {color}'></span>"
+                    value = f"<span style = 'display: inline-block; width: 12px; height: 12px; background-color: {color}; opacity:{alpha}'></span>"
                 )
             )
             legend_items.append(
                 Label(
                     value = label,
                     layout = Layout(
-                        margin = "0 12px 0 12px"
+                        margin = "0 12px 0 4px"
                     )
                 )
             )
@@ -243,9 +244,9 @@ def draw_multidisciplinary_graphs(
         return HBox(
             children = legend_items,
             layout = Layout(
-                justify_content = "center",
                 width = "100%",
-                margin = "-12px 0 0 48px"
+                justify_content = "center",
+                margin = "-12px 0 0 0"
             )
         )
 
@@ -414,11 +415,77 @@ def draw_interface(number_of_groups: int) -> VBox:
     """
     Plot the figures in a grid layout :
     """
+    # Create the update button to update all the figures :
+    update_button = Button(
+        description = "Calculer",
+        button_style = "success",
+        style = {
+            "font_size": "32px",
+            "font_weight": "bold",
+            "text_align": "center"
+        },
+        layout = Layout(
+            width = "100%",
+            height = "125px",
+        )
+    )
+    update_button.on_click(
+        lambda button: update_figures(
+            button,
+            number_of_groups,
+            process_engines,
+            checkboxes_lists,
+            {
+                "prospective_scenarios_graphs": prospective_scenarios_graphs,
+                "multidisciplinary_graphs": multidisciplinary_graphs
+            },
+            {
+                "prospective_scenario_y_scale": prospective_scenario_graphs_shared_y_scale,
+                "multidisciplinary_y_scale": multidisciplinary_graphs_shared_y_scale
+            }
+        )
+    )
+
+    button_box = HBox(
+        [update_button],
+        layout = Layout(
+            width = "100%",
+            height = "175px",
+            align_items = "center",
+            overflow = "hidden"
+        )
+    )
+
+    # Create a widget for the title of the reference prospective scenario section :
+    prospective_scenario_graphs_title = HTML("<h1 style='margin:50px 0 0 0; text-decoration: underline'>Simulations de la trajectoire des émissions de CO₂ du transport aérien entre 2019 et 2050</h1>")
+    prospective_scenario_graphs_title_box = HBox(
+        [prospective_scenario_graphs_title],
+        layout = Layout(
+            width = "100%",
+            justify_content = "center",
+            overflow = "hidden"
+        )
+    )
+
+    # Create a widget for the title of the multidisciplinary graphs section :
+    multidisciplinary_graphs_title = HTML("<h1 style='margin:50px 0 0 0; text-decoration: underline'>Pourcentage du budget mondial des ressources consommées par le transport aérien entre 2019 et 2050</h1>")
+    multidisciplinary_graphs_title_box = HBox(
+        [multidisciplinary_graphs_title],
+        layout = Layout(
+            width = "100%",
+            justify_content = "center",
+            overflow = "hidden"
+        )
+    )
+
     # Create the boxes for the prospective scenario figures :
     reference_prospective_scenario_box = AppLayout(
         center = reference_prospective_scenario_figure,
-        align_items = "center",
-        width = "100%"
+        layout = Layout(
+            width = "100%",
+            align_items = "center",
+            overflow = "hidden"
+        )
     )
 
     prospective_scenario_boxes = [
@@ -426,12 +493,15 @@ def draw_interface(number_of_groups: int) -> VBox:
             left_sidebar = VBox(
                 checkboxes_lists[index],
                 layout = Layout(
-                    margin = "0 0 0 25px"
+                    margin = "0 15px 0 15px"
                 )
             ),
             center = figure,
-            align_items = "center",
-            width = "100%"
+            layout = Layout(
+                width = "100%",
+                align_items = "center",
+                overflow = "hidden"
+            ),
         )
         for index, figure in enumerate(prospective_scenarios_figures)
     ]
@@ -476,77 +546,20 @@ def draw_interface(number_of_groups: int) -> VBox:
             for index in range(0, len(all_multidisciplinary_figures), 2)
         ]
 
-    # Create the update button to update all the figures :
-    update_button = Button(
-        description = "Calculer",
-        button_style = "success",
-        layout = Layout(
-            width = "100%",
-            height = "125px",
-        )
-    )
-    update_button.on_click(
-        lambda button: update_figures(
-            button,
-            number_of_groups,
-            process_engines,
-            checkboxes_lists,
-            {
-                "prospective_scenarios_graphs": prospective_scenarios_graphs,
-                "multidisciplinary_graphs": multidisciplinary_graphs
-            },
-            {
-                "prospective_scenario_y_scale": prospective_scenario_graphs_shared_y_scale,
-                "multidisciplinary_y_scale": multidisciplinary_graphs_shared_y_scale
-            }
-        )
-    )
-
-    button_box = HBox(
-        [update_button],
-        layout = Layout(
-            width = "100%",
-            height = "175px",
-            align_items = "center"
-        )
-    )
-
-    # Create a widget for the title of the reference prospective scenario section :
-    prospective_scenario_graphs_title = HTML("<h3 style='margin:0'>Simulations de l'évolution des émissions de CO₂ du transport aérien sur la période 2019-2050</h3>")
-    prospective_scenario_graphs_title_box = HBox(
-        [prospective_scenario_graphs_title],
-        layout = Layout(
-            width = "100%",
-            justify_content = "center",
-            align_items = "center"
-        )
-    )
-
-    # Create a widget for the title of the multidisciplinary graphs section :
-    multidisciplinary_graphs_title = HTML("<h3 style='margin:0'>Pourcentages du budget des ressources mondiales utilisés par le transport aérien sur la période 2019-2050</h3>")
-    multidisciplinary_graphs_title_box = HBox(
-        [multidisciplinary_graphs_title],
-        layout = Layout(
-            width = "100%",
-            justify_content = "center",
-            align_items = "center"
-        )
-    )
-
     """
     Organize the layout of the interface using a container grid :
     """
     # Create the list of rows for the grid layout :
     rows = [
+        button_box,
         prospective_scenario_graphs_title_box,
         reference_prospective_scenario_box,
         *prospective_scenario_boxes,
-        button_box,
         multidisciplinary_graphs_title_box,
         *multidisciplinary_boxes
     ]
 
     # Create the container grid layout with the specified number of rows and one column :
-    container = VBox(rows, layout = Layout(width="100%"))
+    container = VBox(rows, layout = Layout(width = "100%"))
 
     return container

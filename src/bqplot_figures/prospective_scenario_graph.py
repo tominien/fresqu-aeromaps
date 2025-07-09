@@ -332,12 +332,13 @@ class ProspectiveScenarioGraph(BaseGraph):
         return self.figure
 
 
-    def get_legend_elements(self) -> Tuple[List[str], List[str]]:
+    def get_legend_elements(self) -> Tuple[List[str], List[str], List[str]]:
         # Check if the figure is already drawn :
         super().get_legend_elements()
 
         # Get the legend elements :
-        colors = self._historic_line.colors + self._prospective_lines.colors + self._aspects_areas.colors
-        labels = self._historic_line.labels + self._prospective_lines.labels + self._aspects_areas.labels
+        colors    = self._historic_line.colors + self._prospective_lines.colors + self._aspects_areas.colors
+        labels    = self._historic_line.labels + self._prospective_lines.labels + self._aspects_areas.labels
+        opacities = self._historic_line.opacities + self._prospective_lines.opacities + self._aspects_areas.fill_opacities
 
-        return colors, labels
+        return colors, labels, opacities
