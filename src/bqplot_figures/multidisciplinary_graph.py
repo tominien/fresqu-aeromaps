@@ -50,7 +50,7 @@ class MultidisciplinaryGraph(BaseGraph):
     """
     Graph class for displaying multidisciplinary assessment data.
 
-    Implements the `draw()` and `update()` methods.
+    Implements the `draw()`, `update()` and `get_legend_elements()` methods.
 
     #### Arguments :
     - `figure_title (str)` : Title of the figure.

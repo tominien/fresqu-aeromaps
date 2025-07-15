@@ -14,6 +14,7 @@ class BaseGraph(ABC):
     Subclasses must implement:
     - `draw(data)` : To create the initial figure.
     - `update(data)` : To update the figure with new data.
+    - `get_legend_elements()` : To retrieve the legend elements of the graph.
 
     #### Attributes :
     - `figure (Figure)` : The figure instance.

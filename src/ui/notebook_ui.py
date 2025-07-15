@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Any, Optional
 
 from crud.crud_cards import get_cards_name, get_card_id_by_name
 
@@ -6,7 +6,11 @@ from core.aeromaps_utils.process_engine import ProcessEngine
 
 from bqplot import Figure, LinearScale
 from bqplot_figures.base_graph import BaseGraph
-from bqplot_figures.prospective_scenario_graph import ProspectiveScenarioGraph, get_prospective_scenario_y_scales
+from bqplot_figures.prospective_scenario_graph import (
+    ProspectiveScenarioGraph,
+    ProspectiveScenarioGroupComparisonGraph,
+    get_prospective_scenario_y_scales
+)
 from bqplot_figures.multidisciplinary_graph_old import MultidisciplinaryGraphOld
 from bqplot_figures.multidisciplinary_graph import MultidisciplinaryGraph, get_multidisciplinary_graphs_y_scales
 
@@ -118,6 +122,23 @@ def initialize_reference_prospective_scenario_graph(title: Optional[List[str]] =
     return initialize_prospective_scenarios_graphs(1, [title or "Scénario de référence"])[0]
 
 
+def initialize_prospective_scenario_group_comparison_graph(number_of_groups: int, title: Optional[str] = None) -> ProspectiveScenarioGroupComparisonGraph:
+    """
+    Initializes the prospective scenario group comparison graph.
+
+    #### Arguments :
+    - `number_of_groups` : The number of groups to create the prospective scenario group comparison graph for (Reference scenario excluded).
+    - `title` : An optional title for the prospective scenario group comparison graph. Defaults to "Comparaison des scénarios des groupes".
+
+    #### Returns :
+    - `ProspectiveScenarioGroupComparisonGraph` : The prospective scenario group comparison graph.
+    """
+    return ProspectiveScenarioGroupComparisonGraph(
+        title or "Comparaison des scénarios obtenus par chaque groupe",
+        number_of_groups
+    )
+
+
 def initialize_multidisciplinary_graphs(number_of_groups: int, titles: Optional[List[str]] = None) -> List[MultidisciplinaryGraph]:
     """
     Initializes the multidisciplinary graphs for each group.
@@ -155,7 +176,7 @@ def initialize_reference_multidisciplinary_graph(title: Optional[str] = None) ->
 
 def draw_prospective_scenario_graphs(
     prospective_scenarios_graphs: List[ProspectiveScenarioGraph],
-    process_engines_data: List[List[dict]],
+    process_engines_data: List[Dict[str, Any]],
     shared_y_scale: Optional[LinearScale] = None
 ) -> List[Figure]:
     """
@@ -173,7 +194,7 @@ def draw_prospective_scenario_graphs(
 
     # Draw each prospective scenario graph with the corresponding data :
     for graph, data in zip(prospective_scenarios_graphs, process_engines_data):
-        figure = graph.draw(data, shared_y_scale)
+        figure = graph.draw(data, y_scale = shared_y_scale)
         figure.fig_margin = {"top": 60, "bottom": 60, "left": 60, "right": 100}
 
         figures.append(figure)
@@ -181,9 +202,37 @@ def draw_prospective_scenario_graphs(
     return figures
 
 
+def draw_prospective_scenario_group_comparison_graph(
+    group_comparison_prospective_scenario_graph: ProspectiveScenarioGroupComparisonGraph,
+    reference_process_engine_data: Dict[str, Any],
+    process_engines_data: List[Dict[str, Any]],
+    shared_y_scale: Optional[LinearScale] = None
+) -> Figure:
+    """
+    Draws the prospective scenario group comparison graph.
+
+    #### Parameters :
+    - `group_comparison_prospective_scenario_graph` : The prospective scenario group comparison graph to draw.
+    - `reference_process_engine_data` : The data of the reference process engine to use for the comparison.
+    - `process_engines_data` : A list of computed data for each process engine.
+    - `shared_y_scale` : An optional shared y-axis scale for the group comparison graph. If not provided, the graph will have its own scale.
+
+    #### Returns :
+    - `Figure` : The drawn figure for the prospective scenario group comparison graph.
+    """
+    figure = group_comparison_prospective_scenario_graph.draw(
+        reference_process_engine_data,
+        process_engines_data,
+        y_scale = shared_y_scale
+    )
+    figure.fig_margin = {"top": 60, "bottom": 60, "left": 60, "right": 100}
+
+    return figure
+
+
 def draw_multidisciplinary_graphs(
     multidisciplinary_graphs: List[MultidisciplinaryGraph],
-    process_engines_data: List[List[dict]],
+    process_engines_data: List[Dict[str, Any]],
     shared_y_scale: Optional[LinearScale] = None
 ) -> List[VBox]:
     """
@@ -254,7 +303,7 @@ def draw_multidisciplinary_graphs(
 
     # Draw each multidisciplinary graph with the corresponding data :
     for graph, data in zip(multidisciplinary_graphs, process_engines_data):
-        figure = graph.draw(data, shared_y_scale, display_default_legend = False)
+        figure = graph.draw(data, y_scale = shared_y_scale, display_default_legend = False)
         figure.layout = Layout(width = "100%")
         figure_legend = draw_disciplinary_graph_legend(*graph.get_legend_elements())
 
@@ -276,6 +325,7 @@ def draw_multidisciplinary_graphs(
 def update_figures(
     _button: Button,
     number_of_groups: int,
+    reference_process_engine_data: Dict[str, Any],
     process_engines: List[ProcessEngine],
     checkboxes_lists: List[List[Checkbox]],
     graphs: Dict[str, List[BaseGraph]],
@@ -287,6 +337,7 @@ def update_figures(
     #### Arguments :
     - `_button` : The button that triggered the update (not used in this function).
     - `number_of_groups` : The number of groups to update the figures for.
+    - `reference_process_engine_data` : The data of the reference process engine to use for the comparison of Prospective Scenario Group Comparison Graph.
     - `process_engines` : A list of process engines to compute the new data.
     - `checkboxes_lists` : A list of lists containing the checkbox widgets for each group.
     - `graphs` : A dictionary containing the prospective scenario graphs and multidisciplinary graphs.
@@ -295,8 +346,9 @@ def update_figures(
     - `None` : This function does not return anything, it updates the graphs in place
     """
     # Get each type of graph from the dictionary :
-    prospective_scenario_graphs = graphs["prospective_scenarios_graphs"]
-    multidisciplinary_graphs    = graphs["multidisciplinary_graphs"]
+    prospective_scenario_graphs                 = graphs["prospective_scenarios_graphs"]
+    group_comparison_prospective_scenario_graph = graphs["prospective_scenario_group_comparison_graph"][0]
+    multidisciplinary_graphs                    = graphs["multidisciplinary_graphs"]
 
     # Compute each process based on the selected widgets :
     new_data = [None] * number_of_groups # Initialize a list to store the new data for each group
@@ -315,7 +367,7 @@ def update_figures(
 
     # Update the graphs shared y-axis :
     prospective_scenario_graphs_shared_y_scale = shared_y_scales.get("prospective_scenario_y_scale", None)
-    multidisciplinary_graphs_shared_y_scale = shared_y_scales.get("multidisciplinary_y_scale", None)
+    multidisciplinary_graphs_shared_y_scale    = shared_y_scales.get("multidisciplinary_y_scale", None)
 
     if prospective_scenario_graphs_shared_y_scale is not None:
         # Update the shared y-axis scale for the prospective scenario graphs :
@@ -333,6 +385,11 @@ def update_figures(
     for index in range(number_of_groups):
         prospective_scenario_graphs[index].update(new_data[index])
         multidisciplinary_graphs[index].update(new_data[index])
+
+    group_comparison_prospective_scenario_graph.update(
+        reference_process_engine_data,
+        new_data
+    )
 
 
 def draw_interface(number_of_groups: int) -> VBox:
@@ -380,6 +437,15 @@ def draw_interface(number_of_groups: int) -> VBox:
     prospective_scenarios_graphs  = initialize_prospective_scenarios_graphs(number_of_groups)
     prospective_scenarios_figures = draw_prospective_scenario_graphs(
         prospective_scenarios_graphs,
+        process_engines_data,
+        prospective_scenario_graphs_shared_y_scale
+    )
+
+    # Initialize the group comparison prospective scenario graph :
+    group_comparison_prospective_scenario_graph = initialize_prospective_scenario_group_comparison_graph(number_of_groups)
+    group_comparison_prospective_scenario_figure = draw_prospective_scenario_group_comparison_graph(
+        group_comparison_prospective_scenario_graph,
+        reference_process_engine_data,
         process_engines_data,
         prospective_scenario_graphs_shared_y_scale
     )
@@ -433,10 +499,12 @@ def draw_interface(number_of_groups: int) -> VBox:
         lambda button: update_figures(
             button,
             number_of_groups,
+            reference_process_engine_data,
             process_engines,
             checkboxes_lists,
             {
                 "prospective_scenarios_graphs": prospective_scenarios_graphs,
+                "prospective_scenario_group_comparison_graph": [group_comparison_prospective_scenario_graph],
                 "multidisciplinary_graphs": multidisciplinary_graphs
             },
             {
@@ -506,6 +574,16 @@ def draw_interface(number_of_groups: int) -> VBox:
         for index, figure in enumerate(prospective_scenarios_figures)
     ]
 
+    # Create the box for the group comparison prospective scenario figure :
+    group_comparison_prospective_scenario_box = AppLayout(
+        center = group_comparison_prospective_scenario_figure,
+        layout = Layout(
+            width = "100%",
+            align_items = "center",
+            overflow = "hidden"
+        )
+    )
+
     # Create the boxes for the multidisciplinary figures (each box contains two figures) :
     if number_of_groups % 2 == 0:
         # If the number of groups is even, we can pair them up (and centrer the reference scenario) :
@@ -555,6 +633,7 @@ def draw_interface(number_of_groups: int) -> VBox:
         prospective_scenario_graphs_title_box,
         reference_prospective_scenario_box,
         *prospective_scenario_boxes,
+        group_comparison_prospective_scenario_box,
         multidisciplinary_graphs_title_box,
         *multidisciplinary_boxes
     ]

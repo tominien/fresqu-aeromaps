@@ -1,3 +1,5 @@
+from typing import List
+
 from pathlib import Path
 
 import colorsys
@@ -36,25 +38,57 @@ def generate_pastel_palette(number_of_colors: int) -> list[str]:
 
     for index in range(number_of_colors):
         hue = index / number_of_colors
-        r, g, b = colorsys.hsv_to_rgb(hue, saturation, hsv_value)
+        red, green, blue = colorsys.hsv_to_rgb(hue, saturation, hsv_value)
         hex_color = "#{:02x}{:02x}{:02x}".format(
-            int(r * 255),
-            int(g * 255),
-            int(b * 255)
+            int(red * 255),
+            int(green * 255),
+            int(blue * 255)
         )
         palette.append(hex_color)
 
     return palette
 
 
-def float_to_int_string(value: float) -> str:
+def get_all_distances(values: List[float]) -> List[float]:
     """
-    Convert a float value to an integer string.
+    Returns the list of all distances between all of the values.
 
     #### Arguments :
-    - `value (float)` : The float value to convert.
+    - `values (List[float])` : A list of float values.
 
     #### Returns :
-    - `str` : The integer string representation of the float value.
+    - `List(float)` : A list of `n * (n - 1) / 2` distances between all of the values, where `n` is the number of values. 
     """
-    return str(int(value))
+    # If there are less than 2 values, return an empty list :
+    if len(values) < 2:
+        return []
+
+    # Calculate the distances between all of the values :
+    distances = []
+    for index_first_value, first_value in enumerate(values):
+        for second_value in values[index_first_value + 1:]:
+            distances.append(abs(first_value - second_value))
+
+    # Sort the distances :
+    distances.sort()
+
+    return distances
+
+
+def get_first_positive_minimal_distance(values: List[float]) -> float:
+    """
+    Returns the first minimal distance greater than 0 between all of the values.
+
+    #### Arguments :
+    - `values (List[float])` : A list of float values.
+
+    #### Returns :
+    - `float` : The first minimal distance greater than 0 between all of the values or 0.0 if there are no positive distances.
+    """
+    # Get all of the distances (sorted) :
+    all_distances = get_all_distances(values)
+
+    # Get all of the positive distances :
+    positive_distances = [distance for distance in all_distances if distance > 0]
+
+    return min(positive_distances) if positive_distances else 0.0
