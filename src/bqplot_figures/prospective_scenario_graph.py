@@ -12,8 +12,7 @@ from bqplot_figures.utils.prospective_scenario_graph_utils import (
     get_y_prospective_lines,
     get_y_aspects_areas,
     get_y_prospective_lines_groups_comparison,
-    get_y_prospective_labels_groups_comparison,
-    format_final_value,
+    get_y_final_values_lines,
     LINES_NAMES,
     ASPECTS_NAMES,
     NUMBER_OF_ASPECTS,
@@ -83,11 +82,11 @@ class ProspectiveScenarioGraph(BaseGraph):
         )
 
         # Placeholders for marks :
-        self._historic_line: Lines      = None
-        self._prospective_lines: Lines  = None
-        self._aspects_areas: Lines      = None
-        self._past_shade: Lines         = None
-        self._prospective_labels: Label = None
+        self._historic_line: Lines            = None
+        self._prospective_lines: Lines        = None
+        self._aspects_areas: Lines            = None
+        self._past_shade: Lines               = None
+        self._prospective_final_values: Label = None
 
 
     def draw(
@@ -188,15 +187,14 @@ class ProspectiveScenarioGraph(BaseGraph):
         )
 
         # Plot / display the final values of the prospective lines on the right side of the graph :
-        prospective_years_final_value = [serie.iloc[-1] for serie in y_prospective_lines]
-        prospective_years_final_value_formatted = [format_final_value(value) for value in prospective_years_final_value]
+        y_prospective_years_final_value, text_prospective_final_values = get_y_final_values_lines(y_prospective_lines)
 
-        self._prospective_labels = Label(
-            x = [full_years[-1]] * 2, # Position the labels at the end of the prospective lines.
-            y = prospective_years_final_value,    # Position the labels at the same height as the end of both prospective lines.
+        self._prospective_final_values = Label(
+            x = [full_years[-1]] * 2,            # Position the final values at the end of the prospective lines.
+            y = y_prospective_years_final_value, # Position the formatted final values at the same height as the end of both prospective lines.
             colors = colors_prospective_lines,
-            text = prospective_years_final_value_formatted,
-            default_size = 12, # Size of the labels (12px).
+            text = text_prospective_final_values,
+            default_size = 12,
             align = "start",
             x_offset = 8,
             scales = {"x": x_scale, "y": y_scale},
@@ -228,7 +226,7 @@ class ProspectiveScenarioGraph(BaseGraph):
                 self._historic_line,
                 self._prospective_lines,
                 self._aspects_areas,
-                self._prospective_labels
+                self._prospective_final_values
             ],
             axes = [x_axis, y_axis],
             title = self.figure_title,
@@ -249,12 +247,13 @@ class ProspectiveScenarioGraph(BaseGraph):
             # Updating the historic line data is not necessary as it remains constant.
             
             y_prospective_lines = get_y_prospective_lines(process_data)
+            y_prospective_final_values, text_prospective_final_values = get_y_final_values_lines(y_prospective_lines)
             # Update the y-axis of the prospective lines (updating the x-axis is not necessary as it remains constant) :
             self._prospective_lines.y = [y_prospective_line.tolist() for y_prospective_line in y_prospective_lines] # Use of the ".tolist()" method to force a BQPlot update of the data.
-            # Update the y-axis of the text of the prospective labels (updating the x-axis is not necessary as it remains constant) :
-            self._prospective_labels.y = [serie.iloc[-1] for serie in y_prospective_lines]
-            # Update the text content of the text of the prospective labels :
-            self._prospective_labels.text = [format_final_value(value) for value in self._prospective_labels.y]
+            # Update the y-axis of the text of the prospective final values (updating the x-axis is not necessary as it remains constant) :
+            self._prospective_final_values.y = y_prospective_final_values
+            # Update the text content of the text of the prospective final values :
+            self._prospective_final_values.text = text_prospective_final_values
             
             # Update the y-axis of the aspects areas (updating the x-axis is not necessary as it remains constant) :
             self._aspects_areas.y = [y_aspect_area.tolist() for y_aspect_area in get_y_aspects_areas(process_data)] # Use of the ".tolist()" method to force a BQPlot update of the data.
@@ -305,9 +304,9 @@ class ProspectiveScenarioGroupComparisonGraph(BaseGraph):
         )
 
         # Placeholders for marks :
-        self._historic_line: Lines      = None
-        self._prospective_lines: Lines  = None
-        self._prospective_labels: Label = None
+        self._historic_line: Lines            = None
+        self._prospective_lines: Lines        = None
+        self._prospective_final_values: Label = None
 
 
     def draw(
@@ -341,10 +340,10 @@ class ProspectiveScenarioGroupComparisonGraph(BaseGraph):
         super().draw(process_data, override)
 
         # Extract the years from the process_data :
-        years: Dict[str, List[int]]   = get_years(process_data)
-        full_years: List[int]         = years["full_years"]        # List of intergers ranging from 2000 to 2050 included.
-        historic_years: List[int]     = years["historic_years"]    # List of intergers ranging from 2000 to 2019 included.
-        prospective_years: List[int]  = years["prospective_years"] # List of intergers ranging from 2019 to 2050 included.
+        years: Dict[str, List[int]]  = get_years(process_data)
+        full_years: List[int]        = years["full_years"]        # List of intergers ranging from 2000 to 2050 included.
+        historic_years: List[int]    = years["historic_years"]    # List of intergers ranging from 2000 to 2019 included.
+        prospective_years: List[int] = years["prospective_years"] # List of intergers ranging from 2019 to 2050 included.
 
         # Create scales and axes :
         x_scale = LinearScale()
@@ -396,14 +395,14 @@ class ProspectiveScenarioGroupComparisonGraph(BaseGraph):
         )
 
         # Plot / display the final values of all of the displayed lines (the prospective lines based on the reference scenario AND the lines from all the groups scenarios) on the right side of the graph :
-        y_prospective_labels, text_prospective_labels = get_y_prospective_labels_groups_comparison(y_prospective_lines)
+        y_prospective_final_values, text_prospective_final_values = get_y_final_values_lines(y_prospective_lines)
 
-        self._prospective_labels = Label(
+        self._prospective_final_values = Label(
             x = [full_years[-1]] * len(y_prospective_lines), # Position the labels at the end of the prospective lines.
-            y = y_prospective_labels, # Position the labels at the same height as the end of both prospective lines.
+            y = y_prospective_final_values,                  # Position the labels at the same height as the end of both prospective lines.
             colors = colors_prospective_lines,
-            text = text_prospective_labels,
-            default_size = 12, # Size of the labels (12px).
+            text = text_prospective_final_values,
+            default_size = 12,
             align = "start",
             x_offset = 8,
             scales = {"x": x_scale, "y": y_scale},
@@ -415,7 +414,7 @@ class ProspectiveScenarioGroupComparisonGraph(BaseGraph):
             marks = [
                 self._historic_line,
                 self._prospective_lines,
-                self._prospective_labels
+                self._prospective_final_values
             ],
             axes = [x_axis, y_axis],
             title = self.figure_title,
@@ -467,14 +466,14 @@ class ProspectiveScenarioGroupComparisonGraph(BaseGraph):
             self._prospective_lines.labels = labels_prospective_lines
 
             # Update the final values of all prospective lines :
-            y_prospective_labels, text_prospective_labels = get_y_prospective_labels_groups_comparison(y_prospective_lines)
+            y_prospective_final_values, text_prospective_final_values = get_y_final_values_lines(y_prospective_lines)
             # Update the x-axis and y-axis of all the labels of the prospective lines :
-            self._prospective_labels.x = [self._prospective_labels.x[0]] * len(y_prospective_lines) # We need to update the number of x-axis values to match the number of prospective lines / y-values.
-            self._prospective_labels.y = y_prospective_labels
+            self._prospective_final_values.x = [self._prospective_final_values.x[0]] * len(y_prospective_lines) # We also need to update the number of x-axis values to match the number of prospective lines / y-values.
+            self._prospective_final_values.y = y_prospective_final_values
             # Update the colors of the labels of the prospective lines :
-            self._prospective_labels.colors = color_prospective_lines
+            self._prospective_final_values.colors = color_prospective_lines
             # Update the text content of the labels of the prospective lines :
-            self._prospective_labels.text = text_prospective_labels
+            self._prospective_final_values.text = text_prospective_final_values
 
         return self.figure
 

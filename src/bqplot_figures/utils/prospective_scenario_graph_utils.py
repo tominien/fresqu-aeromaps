@@ -182,37 +182,38 @@ def get_y_prospective_lines_groups_comparison(
     )
 
 
-def get_y_prospective_labels_groups_comparison(
-        prospective_lines: List[Series],
+def get_y_final_values_lines(
+        lines: List[Series],
         minimal_distance: float = 100
     ) -> Tuple[List[float], List[str]]:
     """
-    Get the y-values and end values of the prospective labels for group comparison from the prospective lines.
+    Get the final y-values and formatted final values of each line.
 
     #### Arguments :
-    - `prospective_lines (List[Series])` : A list of Series objects representing the y-values of the prospective lines.
-    - `minimal_distance (float)` : The minimal distance between the end values of the prospective labels to display them. If the distance is less than or equal to this value, the end values will not be displayed.
+    - `lines (List[Series])` : A list of Series objects representing the y-values of the lines.
+    - `minimal_distance (float)` : The minimal required distance between all final y-values of the lines to display them.
+        If any two final y-values are closer than the minimal distance, no final values will not be displayed.
 
     #### Returns :
-    - `List[float]` : A list containing the y-values of the prospective labels.
-    - `List[str]` : A list of end values corresponding to each prospective label.
+    - `List[float]` : A list containing the final y-values of the lines.
+    - `List[str]` : A list of **string-formatted** final values for each line.
     """
-    # Get the y-values of the prospective labels :
-    prospective_labels_y_values: List[float] = [
-        prospective_line.iloc[-1] for prospective_line in prospective_lines
+    # Get the final y-values of the lines :
+    final_y_values: List[float] = [
+        line.iloc[-1] for line in lines
     ]
 
-    # Get the prospective labels (if the end values are too close to each other, return "" instead of the formatted end values) :
-    first_positive_minimal_distance = get_first_positive_minimal_distance(prospective_labels_y_values)
+    # Get the formatted final values (if any two final values are closer than the minimal distance, don't display any final values) :
+    first_positive_minimal_distance = get_first_positive_minimal_distance(final_y_values)
     if 0 < first_positive_minimal_distance <= minimal_distance:
-        prospective_labels_end_values = [""] * len(prospective_labels_y_values)
+        final_y_values_text = [""] * len(final_y_values)
     else:
-        prospective_labels_end_values = [
+        final_y_values_text = [
             format_final_value(value)
-            for value in prospective_labels_y_values
+            for value in final_y_values
         ]
 
-    return prospective_labels_y_values, prospective_labels_end_values
+    return final_y_values, final_y_values_text
 
 
 def format_final_value(value: float) -> str:
