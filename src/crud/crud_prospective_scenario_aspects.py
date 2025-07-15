@@ -1,4 +1,4 @@
-from typing import Dict, List, Any
+from typing import Any, Dict, List
 
 from utils import PROSPECTIVE_SCENARIO_ASPECTS_AREAS_JSON_PATH
 

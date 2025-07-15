@@ -3,20 +3,14 @@ from typing import Any, Dict, List, Tuple, Optional
 from bqplot import Figure, Bars, Axis, LinearScale, OrdinalScale
 from bqplot_figures.base_graph import BaseGraph
 
-from crud.crud_multidisciplinary_bars import get_bars, get_bars_names
-
-from core.aeromaps_utils.evaluate_expression import evaluate_expression_aeromaps
-
 from utils import generate_pastel_palette
+from bqplot_figures.utils.multidisciplinary_graph_utils import (
+    BARS_NAMES,
+    get_y_consumption_bars,
+    get_y_budget_bars
+)
 
 
-
-
-# Load the bars from the JSON file :
-BARS                                                   = get_bars()
-BARS_NAMES: List[str]                                  = get_bars_names()
-BARS_BUDGET_OUTPUT_FORMULAS: List[Dict[str, str]]      = [line["output_formula_BUDGET"] for line in BARS.values()]
-BARS_CONSUMPTION_OUTPUT_FORMULAS: List[Dict[str, str]] = [line["output_formula_CONSUMPTION"] for line in BARS.values()]
 
 
 def get_multidisciplinary_graphs_y_scales(processes_data: List[Dict[str, Any]]) -> Tuple[float, float]:
@@ -29,18 +23,15 @@ def get_multidisciplinary_graphs_y_scales(processes_data: List[Dict[str, Any]]) 
     #### Returns :
     - `Tuple[float]` : A tuple containing the minimal and maximal values of all the y-scales for the budget and consumption bars.
     """
-    # Create a temporary MultidisciplinaryGraph instance to access the methods :
-    temp_graph = MultidisciplinaryGraph("Temporary Graph")
-
     # Get the y-values for the budget and consumption bars from all processes data :
     all_y_lines = []
     for process_data in processes_data:
         # Get the y-values for the budget bars :
-        y_budget_bars = temp_graph._get_y_budget_bars(process_data)
+        y_budget_bars = get_y_budget_bars(process_data)
         all_y_lines.extend(y_budget_bars)
 
         # Get the y-values for the consumption bars :
-        y_consumption_bars = temp_graph._get_y_consumption_bars(process_data)
+        y_consumption_bars = get_y_consumption_bars(process_data)
         all_y_lines.extend(y_consumption_bars)
 
     return (min(all_y_lines), max(all_y_lines)) if all_y_lines else (0.0, 0.0)
@@ -70,46 +61,6 @@ class MultidisciplinaryGraph(BaseGraph):
 
         # Placeholders for marks :
         self._bars: Bars = None
-
-
-    def _get_y_budget_bars(self, process_data: Dict[str, Any]) -> List[float]:
-        """
-        Get the y-values for the budget bars from the process data.
-
-        #### Arguments :
-        - `process_data (Dict[str, Any])` : The process data containing the necessary information to calculate the budget data.
-
-        #### Returns :
-        - `List[float]` : A list of floats containing the y-values for the budget bars.
-        """
-        return [
-            evaluate_expression_aeromaps(
-                process_data,
-                bar_budget_output_formula["expression"],
-                bar_budget_output_formula["year_range"] if "year_range" in bar_budget_output_formula.keys() else None
-            )
-            for bar_budget_output_formula in BARS_BUDGET_OUTPUT_FORMULAS
-        ]
-
-
-    def _get_y_consumption_bars(self, process_data: Dict[str, Any]) -> List[float]:
-        """
-        Get the y-values for the consumption bars from the process data.
-
-        #### Arguments :
-        - `process_data (Dict[str, Any])` : The process data containing the necessary information to calculate the consumption data.
-
-        #### Returns :
-        - `List[float]` : A list of floats containing the y-values for the consumption bars.
-        """
-        return [
-            evaluate_expression_aeromaps(
-                process_data,
-                bar_consumption_output_formula["expression"],
-                bar_consumption_output_formula["year_range"] if "year_range" in bar_consumption_output_formula.keys() else None
-            )
-            for bar_consumption_output_formula in BARS_CONSUMPTION_OUTPUT_FORMULAS
-        ]
 
 
     def draw(
@@ -157,8 +108,8 @@ class MultidisciplinaryGraph(BaseGraph):
         )
 
         # Plot the consumptions and budgets bars :
-        y_consumption_bars = self._get_y_consumption_bars(process_data)
-        y_budget_bars = self._get_y_budget_bars(process_data)
+        y_consumption_bars = get_y_consumption_bars(process_data)
+        y_budget_bars      = get_y_budget_bars(process_data)
 
         self._bars = Bars(
             x = BARS_NAMES,
@@ -193,8 +144,8 @@ class MultidisciplinaryGraph(BaseGraph):
         with self.figure.hold_sync():
             # Update the y-axis of the budget and consumption bars :
             self._bars.y = [
-                self._get_y_consumption_bars(process_data),
-                self._get_y_budget_bars(process_data)
+                get_y_consumption_bars(process_data),
+                get_y_budget_bars(process_data)
             ]
 
         return self.figure

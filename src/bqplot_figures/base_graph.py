@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple, Any
+from typing import Any, Dict, List, Tuple
 
 from abc import ABC, abstractmethod
 

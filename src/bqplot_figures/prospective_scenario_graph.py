@@ -7,6 +7,7 @@ from bqplot_figures.base_graph import BaseGraph
 
 from core.aeromaps_utils.extract_processed_data import get_years
 
+from utils import generate_pastel_palette
 from bqplot_figures.utils.prospective_scenario_graph_utils import (
     get_y_historic_line,
     get_y_prospective_lines,
@@ -18,7 +19,6 @@ from bqplot_figures.utils.prospective_scenario_graph_utils import (
     NUMBER_OF_ASPECTS,
     DEFAULT_LINES_COLORS
 )
-from utils import generate_pastel_palette
 
 
 
