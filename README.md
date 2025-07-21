@@ -35,8 +35,8 @@ Vous trouverez ci-dessus un tutoriel de lancement en local pour chaque version.
 
 Tutoriel de lancement de la version "web" :
 
-- Via le `Dockerfile`, version utilisée sur `render.com` **[RECOMMANDÉE]** :
-    - `docker build -t fresque-aeromaps .`
+- Via le `Dockerfile` **[VERSION RECOMMANDÉE]** :
+    - `docker build -t fresque-aeromaps .` *Cette commande est un peu longue à s'exécuter, il y en aura pour environ 15 minutes.*
     - `docker run --rm -p 8888:8888 fresque-aeromaps`
 - Via le fichier racine `app.py` :
     - `panel serve app.py --address=0.0.0.0 --port=8888 --allow-websocket-origin="*" --prefix="" --index="app" --autoreload`
