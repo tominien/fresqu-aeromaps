@@ -1,4 +1,4 @@
-# Fresqu'AéroMaps [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tominien/Fresqu-aeromaps/HEAD?urlpath=%2Fdoc%2Ftree%2Fapp.ipynb)
+# Fresqu'AéroMaps
 
 Ce repository héberge un outil de simulation basé sur **AéroMAPS** ([Site Web](https://aeromaps.isae-supaero.fr/)).
 
@@ -28,7 +28,7 @@ Vous trouverez ci-dessous une procédure d'installation simple, organisée par �
     - Créer le fichier `.env` à la racine du projet.
     - Copier le contenu du template de fichier d'environnement donné dans la section en bas de fichier.
 
-## Guide de lancement LOCAL
+## Guide de lancement EN LOCAL
 
 L'application **Fresqu'AéroMAPS** possède deux interfaces, une version "web" et une version "Jupyter Notebook".
 Vous trouverez ci-dessus un tutoriel de lancement en local pour chaque version.
@@ -46,6 +46,15 @@ Tutoriel de lancement de la version "Jupyter Notebook" :
 
 - Via le fichier racine `app.ipynb` :
     - `jupyter notebook app.ipynb` *Si vous utilisez Visual Studio Code, veillez bien à choisir le Kernel correspondant à l'environnement `.venv` en haut à droite du notebook.*
+
+## Guide de lancement EN LIGNE
+
+L'application **Fresqu'AéroMAPS** est hébergée en ligne sur 2 sites.
+
+1. Sur [render.com](https://render.com), via l'adresse suivante : https://tominien.onrender.com.
+    - Le temps de chargement initial et de mise à jour de l'application peut être un peu long.
+2. Sur [binder.org](https://mybinder.org), en cliquant sur le bouton suivant : [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tominien/Fresqu-aeromaps/HEAD?urlpath=%2Fdoc%2Ftree%2Fapp.ipynb)
+    - Cette version est plus rapide que celle hébergée sur Render, mais elle est moins intuitive.
 
 ## Template du fichier d'environnement
 
