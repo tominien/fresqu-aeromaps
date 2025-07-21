@@ -1,4 +1,4 @@
-# Fresqu'AéroMaps
+# Fresqu'AéroMaps [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tominien/Fresqu-aeromaps/HEAD?urlpath=%2Fdoc%2Ftree%2Fapp.ipynb)
 
 Ce repository héberge un outil de simulation basé sur **AéroMAPS** ([Site Web](https://aeromaps.isae-supaero.fr/)).
 
