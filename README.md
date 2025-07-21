@@ -8,7 +8,7 @@ Ce projet implémente de manière interactive des simulations de l'évolution du
 
 ## Guide d'installation
 
-Afin de pouvoir facilement installer, compiler, modifier et utiliser le Jupyter Notebook `main.ipynb` sur votre machine, il est fortement recommandé d'utiliser un environnement virtuel Python.
+Afin de pouvoir facilement installer, modifier et utiliser l'application **Fresqu'AéroMAPS** sur votre machine, il est fortement recommandé d'utiliser un environnement virtuel Python.
 
 Vous trouverez ci-dessous une procédure d'installation simple, organisée par étapes :
 
@@ -17,17 +17,37 @@ Vous trouverez ci-dessous une procédure d'installation simple, organisée par �
     - `cd Fresqu-aeromaps`
 2. Installer les outils de compilation et les headers Python :
     - `sudo apt update`
-    - `sudo apt install build-essential python3-dev`
+    - `sudo apt install build-essential python3.12-dev`
 3. Créer un environnement virtuel :
-    - `python3 -m venv .venv`
+    - `python3.12 -m venv .venv`
     - `source .venv/bin/activate`
 4. Installer les dépendances du projet :
     - `pip install --upgrade pip setuptools wheel`
     - `pip install -r requirements.txt`
-5. Lancer le Jupyter Notebook :
-    - `jupyter notebook` *Si vous utilisez Visual Studio Code, veillez bien à choisir le Kernel correspondant à l'environnement `.venv` en haut à droite du notebook.*
+5. Créer le fichier d'environnement :
+    - Créer le fichier `.env` à la racine du projet.
+    - Copier le contenu du template de fichier d'environnement donné dans la section en bas de fichier.
 
-## Template du fichire d'environnement
+## Guide de lancement LOCAL
+
+L'application **Fresqu'AéroMAPS** possède deux interfaces, une version "web" et une version "Jupyter Notebook".
+Vous trouverez ci-dessus un tutoriel de lancement en local pour chaque version.
+
+Tutoriel de lancement de la version "web" :
+
+- Via le `Dockerfile`, version utilisée sur `render.com` **[RECOMMANDÉE]** :
+    - `docker build -t fresque-aeromaps .`
+    - `docker run --rm -p 8888:8888 fresque-aeromaps`
+- Via le fichier racine `app.py` :
+    - `panel serve app.py --address=0.0.0.0 --port=8888 --allow-websocket-origin="*" --prefix="" --index="app" --autoreload`
+- L'application sera alors accessible à l'adresse http://localhost:8888 (et http://localhost:8888/app).
+
+Tutoriel de lancement de la version "Jupyter Notebook" :
+
+- Via le fichier racine `app.ipynb` :
+    - `jupyter notebook app.ipynb` *Si vous utilisez Visual Studio Code, veillez bien à choisir le Kernel correspondant à l'environnement `.venv` en haut à droite du notebook.*
+
+## Template du fichier d'environnement
 
 Afin que Python "reconnaisse" bien le dossier `src/` du projet comme étant celui contenant tout le code source, il est fortement recommandé de créer un fichier `.env`, avec le contenu suivant à la racine du projet :
 ```

@@ -8,14 +8,19 @@ import colorsys
 
 
 ROOT_DIRECTORY_PATH = Path(__file__).resolve().parents[1]
+DATAFILES_PATH = ROOT_DIRECTORY_PATH / "data"
 
-CARDS_JSON_PATH = ROOT_DIRECTORY_PATH / "data" / "cards" / "cards.json"
+# Paths to the JSON data files :
+CARDS_JSON_PATH = DATAFILES_PATH / "graphs_json" / "cards" / "cards.json"
 
-PROSPECTIVE_SCENARIO_ASPECTS_AREAS_JSON_PATH = ROOT_DIRECTORY_PATH / "data" / "prospective_scenario_graph" / "prospective_scenario_aspects_areas.json"
+PROSPECTIVE_SCENARIO_ASPECTS_AREAS_JSON_PATH = DATAFILES_PATH / "graphs_json" / "prospective_scenario_graph" / "prospective_scenario_aspects_areas.json"
+PROSPECTIVE_SCENARIO_ASPECTS_LINES_JSON_PATH = DATAFILES_PATH / "graphs_json" / "prospective_scenario_graph" / "prospective_scenario_aspects_lines.json"
 
-PROSPECTIVE_SCENARIO_ASPECTS_LINES_JSON_PATH = ROOT_DIRECTORY_PATH / "data" / "prospective_scenario_graph" / "prospective_scenario_aspects_lines.json"
+MULTIDISCIPLINARY_BARS_JSON_PATH = DATAFILES_PATH / "graphs_json" / "multidisciplinary_graph" / "multidisciplinary_bars.json"
 
-MULTIDISCIPLINARY_BARS_JSON_PATH = ROOT_DIRECTORY_PATH / "data" / "multidisciplinary_graph" / "multidisciplinary_bars.json"
+# Paths to the Application utility files :
+APPLICATION_EXPLANATIONS_PATH = DATAFILES_PATH / "fresque-aeromaps_application_explanation.md"
+APPLICATION_ICON_PATH         = DATAFILES_PATH / "fresque-aeromaps_logo.ico"
 
 
 def generate_pastel_palette(number_of_colors: int) -> list[str]:

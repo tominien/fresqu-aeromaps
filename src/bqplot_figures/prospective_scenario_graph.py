@@ -375,7 +375,7 @@ class ProspectiveScenarioGroupComparisonGraph(BaseGraph):
         )
 
         # Plot the prospective lines :
-        y_prospective_lines, labels_prospective_lines = get_y_prospective_lines_groups_comparison(
+        y_prospective_lines, labels_prospective_lines, groups_equal_to_reference = get_y_prospective_lines_groups_comparison(
             process_data,
             groups_process_data
         )
@@ -395,7 +395,11 @@ class ProspectiveScenarioGroupComparisonGraph(BaseGraph):
         )
 
         # Plot / display the final values of all of the displayed lines (the prospective lines based on the reference scenario AND the lines from all the groups scenarios) on the right side of the graph :
-        y_prospective_final_values, text_prospective_final_values = get_y_final_values_lines(y_prospective_lines)
+        y_prospective_final_values, text_prospective_final_values = get_y_final_values_lines(
+            y_prospective_lines,
+            include_group_names = True,
+            groups_equal_to_reference = groups_equal_to_reference
+        )
 
         self._prospective_final_values = Label(
             x = [full_years[-1]] * len(y_prospective_lines), # Position the labels at the end of the prospective lines.
@@ -450,7 +454,7 @@ class ProspectiveScenarioGroupComparisonGraph(BaseGraph):
             # Updating the historic line data is not necessary as it remains constant.
 
             # Update all the prospective lines :
-            y_prospective_lines, labels_prospective_lines = get_y_prospective_lines_groups_comparison(
+            y_prospective_lines, labels_prospective_lines, groups_equal_to_reference = get_y_prospective_lines_groups_comparison(
                 process_data,
                 groups_process_data
             )
@@ -466,7 +470,11 @@ class ProspectiveScenarioGroupComparisonGraph(BaseGraph):
             self._prospective_lines.labels = labels_prospective_lines
 
             # Update the final values of all prospective lines :
-            y_prospective_final_values, text_prospective_final_values = get_y_final_values_lines(y_prospective_lines)
+            y_prospective_final_values, text_prospective_final_values = get_y_final_values_lines(
+                y_prospective_lines,
+                include_group_names = True,
+                groups_equal_to_reference = groups_equal_to_reference
+            )
             # Update the x-axis and y-axis of all the labels of the prospective lines :
             self._prospective_final_values.x = [self._prospective_final_values.x[0]] * len(y_prospective_lines) # We also need to update the number of x-axis values to match the number of prospective lines / y-values.
             self._prospective_final_values.y = y_prospective_final_values

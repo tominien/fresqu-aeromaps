@@ -11,15 +11,57 @@ from bqplot_figures.prospective_scenario_graph import (
     ProspectiveScenarioGroupComparisonGraph,
     get_prospective_scenario_y_scales
 )
-from bqplot_figures.multidisciplinary_graph_old import MultidisciplinaryGraphOld
 from bqplot_figures.multidisciplinary_graph import MultidisciplinaryGraph, get_multidisciplinary_graphs_y_scales
 
+import markdown
+
 from ipywidgets import VBox, HBox, Layout, AppLayout, Checkbox, Button, HTML, Label
+
+from utils import APPLICATION_EXPLANATIONS_PATH
 
 
 
 
 CARDS_NAMES = get_cards_name()
+
+COLORS_PROSPECTIVE_SCENARIO = [
+    "#8c564b", "#000000", "#d62728", "#1f77b4",
+    "#ff7f0e", "#2ca02c", "#e377c2", "#9467bd"
+]
+
+COLORS_PROSPECTIVE_SCENARIO_GROUP_COMPARISON = [
+    "#8c564b", "#000000", "#d62728", "#1f77b4",
+    "#ff7f0e", "#2ca02c", "#8c564b", "#9467bd",
+    "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
+    "#b2df8a"
+]
+
+COLORS_MULTIDISCIPLINARY_GRAPH = [
+    "#bf2626", "#26bfbf"
+]
+
+
+def draw_explanations(markdown_file: str = APPLICATION_EXPLANATIONS_PATH) -> VBox:
+    """
+    Draws the explanations for the notebook interface using a markdown file.
+
+    #### Arguments :
+    - `markdown_file (str)` : The path to the markdown file containing the explanations. Defaults to `APPLICATION_EXPLANATIONS_PATH`.
+
+    #### Returns :
+    - `VBox` : A vertical box containing the explanations as HTML.
+    """
+    with open(markdown_file, "r", encoding = "utf-8") as file:
+        markdown_content = file.read()
+
+    return VBox(
+        [HTML(markdown.markdown(markdown_content))],
+        layout = Layout(
+            width = "100%",
+            overflow = "auto",
+            align_items = "center"
+        )
+    )
 
 
 def initialize_checkboxes(number_of_groups: int) -> List[List[Checkbox]]:
@@ -103,9 +145,14 @@ def initialize_prospective_scenarios_graphs(number_of_groups: int, titles: Optio
         raise ValueError("La liste des titres doit avoir la même longueur que le nombre de groupes.")
 
     return (
-        [ProspectiveScenarioGraph(f"Scénario du groupe {index + 1}") for index in range(number_of_groups)]
+        [
+            ProspectiveScenarioGraph(
+                f"Scénario du groupe {index + 1}",
+                COLORS_PROSPECTIVE_SCENARIO
+            ) for index in range(number_of_groups)
+        ]
         if titles is None
-        else [ProspectiveScenarioGraph(title) for title in titles]
+        else [ProspectiveScenarioGraph(title, COLORS_PROSPECTIVE_SCENARIO) for title in titles]
     )
 
 
@@ -134,8 +181,9 @@ def initialize_prospective_scenario_group_comparison_graph(number_of_groups: int
     - `ProspectiveScenarioGroupComparisonGraph` : The prospective scenario group comparison graph.
     """
     return ProspectiveScenarioGroupComparisonGraph(
-        title or "Comparaison des scénarios obtenus par chaque groupe",
-        number_of_groups
+        title or "Comparaison entre le scénario de référence et celui obtenu par chaque groupe",
+        number_of_groups,
+        COLORS_PROSPECTIVE_SCENARIO_GROUP_COMPARISON[:number_of_groups + 3]
     )
 
 
@@ -155,9 +203,14 @@ def initialize_multidisciplinary_graphs(number_of_groups: int, titles: Optional[
 
 
     return (
-        [MultidisciplinaryGraph(f"Scénario du groupe {index + 1}") for index in range(number_of_groups)]
+        [
+            MultidisciplinaryGraph(
+                f"Scénario du groupe {index + 1}",
+                COLORS_MULTIDISCIPLINARY_GRAPH
+            ) for index in range(number_of_groups)
+        ]
         if titles is None
-        else [MultidisciplinaryGraph(title) for title in titles]
+        else [MultidisciplinaryGraph(title, COLORS_MULTIDISCIPLINARY_GRAPH) for title in titles]
     )
 
 
@@ -195,7 +248,7 @@ def draw_prospective_scenario_graphs(
     # Draw each prospective scenario graph with the corresponding data :
     for graph, data in zip(prospective_scenarios_graphs, process_engines_data):
         figure = graph.draw(data, y_scale = shared_y_scale)
-        figure.fig_margin = {"top": 60, "bottom": 60, "left": 60, "right": 100}
+        figure.fig_margin = {"top": 60, "bottom": 60, "left": 60, "right": 90}
 
         figures.append(figure)
 
@@ -225,7 +278,7 @@ def draw_prospective_scenario_group_comparison_graph(
         process_engines_data,
         y_scale = shared_y_scale
     )
-    figure.fig_margin = {"top": 60, "bottom": 60, "left": 60, "right": 100}
+    figure.fig_margin = {"top": 60, "bottom": 60, "left": 60, "right": 150}
 
     return figure
 
@@ -394,7 +447,7 @@ def update_figures(
 
 def draw_interface(number_of_groups: int) -> VBox:
     """
-    Draws the main interface of the notebook with all the graphs and widgets.
+    Draws the main interface of the notebook with all the explanations, graphs and widgets.
 
     #### Arguments :
     - `number_of_groups` : The number of groups to create the interface for. Must be an interger between 1 and 10.
@@ -405,6 +458,11 @@ def draw_interface(number_of_groups: int) -> VBox:
     # Check if the number of groups is valid :
     if not isinstance(number_of_groups, int) or not (1 <= number_of_groups <= 10):
         raise ValueError("Le nombre de groupes doit être un entier entre 1 et 10.")
+
+    """
+    Explanations initialization :
+    """
+    explanations = draw_explanations()
 
     """
     Process engines (and checkboxes) initialization :
@@ -458,17 +516,12 @@ def draw_interface(number_of_groups: int) -> VBox:
     multidisciplinary_graphs_shared_y_scale = LinearScale(min = min_y, max = max_y)
 
     # Initialize the reference multidisciplinary graph :
-    """
     reference_multidisciplinary_graph  = initialize_reference_multidisciplinary_graph()
     reference_multidisciplinary_figure = draw_multidisciplinary_graphs(
         [reference_multidisciplinary_graph],
         [reference_process_engine_data],
         multidisciplinary_graphs_shared_y_scale
     )[0]
-    """
-    reference_multidisciplinary_graph         = MultidisciplinaryGraphOld("Scénario de référence")
-    reference_multidisciplinary_figure        = reference_multidisciplinary_graph.draw(reference_process_engine_data, display_default_legend = False)
-    reference_multidisciplinary_figure.layout = Layout(width = "50%")
 
     # Initialize the multidisciplinary graph for each group :
     multidisciplinary_graphs  = initialize_multidisciplinary_graphs(number_of_groups)
@@ -629,6 +682,7 @@ def draw_interface(number_of_groups: int) -> VBox:
     """
     # Create the list of rows for the grid layout :
     rows = [
+        explanations,
         button_box,
         prospective_scenario_graphs_title_box,
         reference_prospective_scenario_box,

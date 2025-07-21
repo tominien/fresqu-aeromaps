@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-jupyter nbconvert --to html main.ipynb --output index.html
+jupyter nbconvert --to html app.ipynb --output index.html

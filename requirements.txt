@@ -1,4 +1,8 @@
 git+https://github.com/AeroMAPS/AeroMAPS.git@main#egg=aeromaps # Ou remplacer par "aeromaps>=0.8.3b0" si on veut la dernière version 'stable' mais on n'aura plus les mises à jour automatiques.
 bqplot==0.12.45
 ipywidgets==8.0.7
+ipywidgets_bokeh==1.6.0
 pandas==1.5.3
+panel==1.7.4
+python-dotenv==1.1.1
+watchfiles==1.1.0
