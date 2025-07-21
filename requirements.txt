@@ -5,4 +5,3 @@ ipywidgets_bokeh==1.6.0
 pandas==1.5.3
 panel==1.7.4
 python-dotenv==1.1.1
-watchfiles==1.1.0

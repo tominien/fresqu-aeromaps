@@ -245,7 +245,7 @@ class ProspectiveScenarioGraph(BaseGraph):
         # Update the figure :
         with self.figure.hold_sync():
             # Updating the historic line data is not necessary as it remains constant.
-            
+
             y_prospective_lines = get_y_prospective_lines(process_data)
             y_prospective_final_values, text_prospective_final_values = get_y_final_values_lines(y_prospective_lines)
             # Update the y-axis of the prospective lines (updating the x-axis is not necessary as it remains constant) :
@@ -254,7 +254,7 @@ class ProspectiveScenarioGraph(BaseGraph):
             self._prospective_final_values.y = y_prospective_final_values
             # Update the text content of the text of the prospective final values :
             self._prospective_final_values.text = text_prospective_final_values
-            
+
             # Update the y-axis of the aspects areas (updating the x-axis is not necessary as it remains constant) :
             self._aspects_areas.y = [y_aspect_area.tolist() for y_aspect_area in get_y_aspects_areas(process_data)] # Use of the ".tolist()" method to force a BQPlot update of the data.
 

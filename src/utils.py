@@ -20,7 +20,7 @@ MULTIDISCIPLINARY_BARS_JSON_PATH = DATAFILES_PATH / "graphs_json" / "multidiscip
 
 # Paths to the Application utility files :
 APPLICATION_EXPLANATIONS_PATH = DATAFILES_PATH / "fresque-aeromaps_application_explanation.md"
-APPLICATION_ICON_PATH         = DATAFILES_PATH / "fresque-aeromaps_logo.ico"
+APPLICATION_ICON_PATH         = DATAFILES_PATH / "fresque-aeromaps_application_logo.ico"
 
 
 def generate_pastel_palette(number_of_colors: int) -> list[str]:
@@ -62,7 +62,7 @@ def get_all_distances(values: List[float]) -> List[float]:
     - `values (List[float])` : A list of float values.
 
     #### Returns :
-    - `List(float)` : A list of `n * (n - 1) / 2` distances between all of the values, where `n` is the number of values. 
+    - `List(float)` : A list of `n * (n - 1) / 2` distances between all of the values, where `n` is the number of values.
     """
     # If there are less than 2 values, return an empty list :
     if len(values) < 2:

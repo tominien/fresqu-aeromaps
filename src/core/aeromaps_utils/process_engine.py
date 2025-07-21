@@ -150,7 +150,7 @@ def compute_process(
         # Budget carbone :
         if "carbon_budget" in cards_ids:
             ...
-    
+
         # Réglementations et mesures économiques :
         if "reglementations_and_economical_measures" in cards_ids:
             ...

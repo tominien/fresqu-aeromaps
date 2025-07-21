@@ -24,6 +24,7 @@ from utils import APPLICATION_EXPLANATIONS_PATH
 
 CARDS_NAMES = get_cards_name()
 
+# Define the colors used in the graphs :
 COLORS_PROSPECTIVE_SCENARIO = [
     "#8c564b", "#000000", "#d62728", "#1f77b4",
     "#ff7f0e", "#2ca02c", "#e377c2", "#9467bd"

@@ -21,12 +21,12 @@ def get_years(process_data: Dict[str, Any]) -> Dict[str, List[int]]:
     for key in list_keys:
         if key not in process_data["years"]:
             raise ValueError(f"Process data does not contain the '{key}' key.")
-        
+
         years = process_data["years"][key]
-        
+
         if not isinstance(years, list) or not all(isinstance(year, int) for year in years):
             raise TypeError(f"'{key}' should be a list of integers. {type(years)}, {type(years[0])} found.")
-        
+
         years_data[key] = years
 
     return years_data
@@ -44,12 +44,12 @@ def get_dataframe_aeromaps(process_data: Dict[str, Any], dataframe_name: str) ->
     """
     if dataframe_name not in process_data:
         raise ValueError(f"Process data does not contain the '{dataframe_name}' key.")
-    
+
     extracted_dataframe = process_data[dataframe_name]
-    
+
     if not isinstance(extracted_dataframe, DataFrame):
         raise TypeError(f"'{dataframe_name}' should be a pandas DataFrame.")
-    
+
     return extracted_dataframe
 
 

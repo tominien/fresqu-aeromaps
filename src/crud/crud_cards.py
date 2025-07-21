@@ -49,5 +49,5 @@ def get_card_id_by_name(card_name: str, path: str = CARDS_JSON_PATH) -> str:
     for card in cards.values():
         if card["name"] == card_name:
             return card["id"]
-    
+
     raise ValueError(f"Card with name '{card_name}' not found.")

@@ -14,4 +14,4 @@ COPY . /app
 
 EXPOSE 8888
 
-CMD ["sh", "-c", "panel serve app.py --address=0.0.0.0 --port=${PORT:-8888} --allow-websocket-origin='*' --prefix='' --index='app' --autoreload"]
+CMD ["sh", "-c", "panel serve app.py --address=0.0.0.0 --port=${PORT:-8888} --allow-websocket-origin='*' --prefix='' --index='app' --log-level='error'"]
