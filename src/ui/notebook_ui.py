@@ -41,6 +41,124 @@ COLORS_MULTIDISCIPLINARY_GRAPH = [
     "#bf2626", "#26bfbf"
 ]
 
+# Define multiple HTML styles :
+def get_style_string(styles: Dict[str, str]) -> str:
+    """
+    Converts a dictionary of styles to a string format for HTML.
+    
+    #### Arguments :
+    - `styles (Dict[str, str])` : A dictionary where keys are CSS properties and values are their corresponding values.
+    
+    #### Returns :
+    - `str` : A string representation of the styles.
+    """
+    return "; ".join(f"{key}: {value}" for key, value in styles.items()).replace("_", "-")
+
+TITLE_STYLE = {
+    "font_size": "24px",
+    "font_weight": "bold",
+    "text_decoration": "underline",
+    "text_align": "center"
+}
+
+BUTTON_STYLE = {
+    "font_size": "32px",
+    "font_weight": "bold",
+    "text_align": "center"
+}
+
+MULTIDISCIPLINARY_LEGEND_STYLE = {
+    "display": "inline-block",
+    "width": "12px",
+    "height": "12px"
+}
+
+# Define multiple layout styles :
+EXPLANATIONS_VBOX_LAYOUT = {
+    "width": "100%"
+}
+
+CHECKBOXES_GRID_LAYOUT = {
+    "width": "100%",
+    "grid_gap": "0px",
+    "margin": "0px",
+    "padding": "0px"
+}
+
+CHECKBOXES_GRID_LABEL_LAYOUT = {
+    "display": "flex",
+    "justify_content": "center",
+    "align_items": "center",
+    "text_align": "center"
+}
+
+CHECKBOXES_GRID_CHECKBOX_LAYOUT = {
+    "display": "flex",
+    "justify_content": "center",
+    "align_items": "center",
+    "margin": "10px 0px 0px 0px"
+}
+
+CHECKBOXES_GRID_CELL_LAYOUT = {
+    "width": "auto",
+    "height": "auto",
+    "margin": "0px",
+    "padding": "0px",
+    "display": "flex",
+    "justify_content": "center",
+    "align_items": "center",
+    "text_align": "center",
+    "overflow": "hidden"
+}
+
+TITLE_BOX_LAYOUT = {
+    "width" : "100%",
+    "display" : "flex",
+    "justify_content" : "center"
+}
+
+BUTTON_LAYOUT = {
+    "width" : "100%",
+    "height" : "125px"
+}
+
+BUTTON_BOX_LAYOUT = {
+    "width" :  "100%",
+    "height" : "175px",
+    "align_items" : "center",
+    "justify_content" : "center"
+}
+
+PROSPECTIVE_SCENARIO_BOX_LAYOUT = {
+    "width" : "100%",
+    "align_items" : "center"
+}
+
+MULTIDISCIPLINARY_BOX_LAYOUT = {
+    "width" : "100%",
+    "display" : "flex",
+    "flex_flow" : "row nowrap",
+    "justify_content" : "space-around",
+    "align_items" : "flex-start"
+}
+
+MULTIDISCIPLINARY_LEGEND_HBOX_LAYOUT = {
+    "width" : "100%",
+    "justify_content" : "center",
+    "margin" : "-12px 0 0 0"
+}
+
+MULTIDISCIPLINARY_GRAPH_AND_LEGEND_VBOX_LAYOUT = {
+    "width" : "50%",
+    "align_items" : "center"
+}
+
+APP_VBOX_LAYOUT = {
+    "width": "100%"
+}
+
+
+
 
 def draw_explanations(markdown_file: str = APPLICATION_EXPLANATIONS_PATH) -> VBox:
     """
@@ -57,11 +175,7 @@ def draw_explanations(markdown_file: str = APPLICATION_EXPLANATIONS_PATH) -> VBo
 
     return VBox(
         [HTML(markdown.markdown(markdown_content))],
-        layout = Layout(
-            width = "100%",
-            overflow = "auto",
-            align_items = "center"
-        )
+        layout = Layout(**EXPLANATIONS_VBOX_LAYOUT)
     )
 
 
@@ -91,16 +205,8 @@ def create_cell_checkboxes_grid(
     return Box(
         children = [widget],
         layout = Layout(
-            width           = "auto",
-            height          = "auto",
-            margin          = "0px",
-            padding         = "0px",
-            **box_style,
-            display         = "flex",
-            justify_content = "center",
-            align_items     = "center",
-            text_align      = "center",
-            overflow        = "hidden"
+            **CHECKBOXES_GRID_CELL_LAYOUT,
+            **box_style
         )
     )
 
@@ -124,12 +230,7 @@ def initialize_checkboxes_grid(number_of_groups: int) -> Tuple[GridspecLayout, L
     grid = GridspecLayout(
         number_of_rows,
         number_of_columns,
-        layout = Layout(
-            width    = "100%",
-            grid_gap = "0px",
-            margin   = "0px",
-            padding  = "0px"
-        )
+        layout = Layout(**CHECKBOXES_GRID_LAYOUT)
     )
 
     # Initialise the top-left cell (as empty) :
@@ -142,12 +243,7 @@ def initialize_checkboxes_grid(number_of_groups: int) -> Tuple[GridspecLayout, L
     for index_row, card_name in enumerate(CARDS_NAMES):
         label = Label(
             value = card_name,
-            layout = Layout(
-                display         = "flex",
-                justify_content = "center",
-                align_items     = "center",
-                text_align      = "center"
-            )
+            layout = Layout(**CHECKBOXES_GRID_LABEL_LAYOUT)
         )
         grid[index_row + 1, 0] = create_cell_checkboxes_grid(label, ["right", "bottom", "left"])
 
@@ -158,12 +254,7 @@ def initialize_checkboxes_grid(number_of_groups: int) -> Tuple[GridspecLayout, L
             value = False,
             indent = False,
             disabled = True, # Disable the checkbox for the reference scenario.
-            layout = Layout(
-                display         = "flex",
-                justify_content = "center",
-                align_items     = "center",
-                margin          = "10px 0px 0px 0px"
-            )
+            layout = Layout(**CHECKBOXES_GRID_CHECKBOX_LAYOUT)
         )
         grid[index_row + 1, 1] = create_cell_checkboxes_grid(checkbox, ["right", "bottom"])
 
@@ -173,12 +264,7 @@ def initialize_checkboxes_grid(number_of_groups: int) -> Tuple[GridspecLayout, L
         # Create the label for the group name :
         label = Label(
             value = f"Groupe {index_column - 1}",
-            layout = Layout(
-                display         = "flex",
-                justify_content = "center",
-                align_items     = "center",
-                text_align      = "center"
-            )
+            layout = Layout(**CHECKBOXES_GRID_LABEL_LAYOUT)
         )
         grid[0, index_column] = create_cell_checkboxes_grid(label, ["top", "right", "bottom"])
         # Create the checkboxes for each group :
@@ -188,12 +274,7 @@ def initialize_checkboxes_grid(number_of_groups: int) -> Tuple[GridspecLayout, L
             checkbox = Checkbox(
                 value = False,
                 indent = False,
-                layout = Layout(
-                    display         = "flex",
-                    justify_content = "center",
-                    align_items     = "center",
-                    margin          = "10px 0px 0px 0px"
-                )
+                layout = Layout(**CHECKBOXES_GRID_CHECKBOX_LAYOUT)
             )
             # Create the cell with the checkbox :
             cell = create_cell_checkboxes_grid(checkbox, ["right", "bottom"])
@@ -413,7 +494,7 @@ def draw_multidisciplinary_graphs(
     - `List[VBox]` : A list of drawn widgets for each multidisciplinary graph.
     """
     # Create a wrapper function to draw the graphs' legends :
-    def draw_disciplinary_graph_legend(colors: List[str], labels: List[str], opacities: List[str]) -> HBox:
+    def draw_multidisciplinary_graph_legend(colors: List[str], labels: List[str], opacities: List[str]) -> HBox:
         """
         Draws the legend for the multidisciplinary graphs.
 
@@ -435,7 +516,7 @@ def draw_multidisciplinary_graphs(
             # Add a colored square and a label to the legend items :
             legend_items.append(
                 HTML(
-                    value = f"<span style = 'display: inline-block; width: 12px; height: 12px; background-color: {color}; opacity:{alpha}'></span>"
+                    value = f"<span style = '{get_style_string(MULTIDISCIPLINARY_LEGEND_STYLE)}; background-color: {color}; opacity:{alpha}'></span>"
                 )
             )
             legend_items.append(
@@ -458,11 +539,7 @@ def draw_multidisciplinary_graphs(
         # Create the horizontal box :
         return HBox(
             children = legend_items,
-            layout = Layout(
-                width = "100%",
-                justify_content = "center",
-                margin = "-12px 0 0 0"
-            )
+            layout = Layout(**MULTIDISCIPLINARY_LEGEND_HBOX_LAYOUT)
         )
 
     widgets = []
@@ -471,17 +548,13 @@ def draw_multidisciplinary_graphs(
     for graph, data in zip(multidisciplinary_graphs, process_engines_data):
         figure = graph.draw(data, y_scale = shared_y_scale, display_default_legend = False)
         figure.layout = Layout(width = "100%")
-        figure_legend = draw_disciplinary_graph_legend(*graph.get_legend_elements())
+        figure_legend = draw_multidisciplinary_graph_legend(*graph.get_legend_elements())
 
         # Create a VBox to contain the figure and its legend :
         widgets.append(
             VBox(
                 [figure, figure_legend],
-                layout = Layout(
-                    width = "50%",
-                    overflow = "hidden",
-                    align_items = "center"
-                )
+                layout = Layout(**MULTIDISCIPLINARY_GRAPH_AND_LEGEND_VBOX_LAYOUT)
             )
         )
 
@@ -647,19 +720,33 @@ def draw_interface(number_of_groups: int) -> VBox:
     """
     Plot the figures in a grid layout :
     """
+    # Create a widget for the title of the checkboxes selection grid :
+    checkboxes_grid_title = HTML(f"<div style='margin:50px 0 25px 0; {get_style_string(TITLE_STYLE)}'>Sélection des cartes</div>")
+    checkboxes_grid_title_box = Box(
+        [checkboxes_grid_title],
+        layout = Layout(**TITLE_BOX_LAYOUT)
+    )
+
+    # Create a widget for the title of the reference prospective scenario section :
+    prospective_scenario_graphs_title = HTML(f"<h1 style='margin:50px 0 0 0; {get_style_string(TITLE_STYLE)}'>Simulations de la trajectoire des émissions de CO₂ du transport aérien entre 2019 et 2050</h1>")
+    prospective_scenario_graphs_title_box = Box(
+        [prospective_scenario_graphs_title],
+        layout = Layout(**TITLE_BOX_LAYOUT)
+    )
+
+    # Create a widget for the title of the multidisciplinary graphs section :
+    multidisciplinary_graphs_title = HTML(f"<h1 style='margin:50px 0 0 0; {get_style_string(TITLE_STYLE)}'>Pourcentage du budget mondial des ressources consommées par le transport aérien entre 2019 et 2050</h1>")
+    multidisciplinary_graphs_title_box = Box(
+        [multidisciplinary_graphs_title],
+        layout = Layout(**TITLE_BOX_LAYOUT)
+    )
+
     # Create the update button to update all the figures :
     update_button = Button(
         description = "Calculer",
         button_style = "success",
-        style = {
-            "font_size": "32px",
-            "font_weight": "bold",
-            "text_align": "center"
-        },
-        layout = Layout(
-            width = "100%",
-            height = "125px",
-        )
+        style = BUTTON_STYLE,
+        layout = Layout(**BUTTON_LAYOUT)
     )
     update_button.on_click(
         lambda button: update_figures(
@@ -680,56 +767,21 @@ def draw_interface(number_of_groups: int) -> VBox:
         )
     )
 
-    button_box = HBox(
+    button_box = Box(
         [update_button],
-        layout = Layout(
-            width = "100%",
-            height = "175px",
-            align_items = "center",
-            overflow = "hidden"
-        )
-    )
-
-    # Create a widget for the title of the reference prospective scenario section :
-    prospective_scenario_graphs_title = HTML("<h1 style='margin:50px 0 0 0; text-decoration: underline'>Simulations de la trajectoire des émissions de CO₂ du transport aérien entre 2019 et 2050</h1>")
-    prospective_scenario_graphs_title_box = HBox(
-        [prospective_scenario_graphs_title],
-        layout = Layout(
-            width = "100%",
-            justify_content = "center",
-            overflow = "hidden"
-        )
-    )
-
-    # Create a widget for the title of the multidisciplinary graphs section :
-    multidisciplinary_graphs_title = HTML("<h1 style='margin:50px 0 0 0; text-decoration: underline'>Pourcentage du budget mondial des ressources consommées par le transport aérien entre 2019 et 2050</h1>")
-    multidisciplinary_graphs_title_box = HBox(
-        [multidisciplinary_graphs_title],
-        layout = Layout(
-            width = "100%",
-            justify_content = "center",
-            overflow = "hidden"
-        )
+        layout = Layout(**BUTTON_BOX_LAYOUT)
     )
 
     # Create the boxes for the prospective scenario figures :
     reference_prospective_scenario_box = AppLayout(
         center = reference_prospective_scenario_figure,
-        layout = Layout(
-            width = "100%",
-            align_items = "center",
-            overflow = "hidden"
-        )
+        layout = Layout(**PROSPECTIVE_SCENARIO_BOX_LAYOUT)
     )
 
     prospective_scenario_boxes = [
         AppLayout(
             center = figure,
-            layout = Layout(
-                width = "100%",
-                align_items = "center",
-                overflow = "hidden"
-            ),
+            layout = Layout(**PROSPECTIVE_SCENARIO_BOX_LAYOUT)
         )
         for figure in prospective_scenarios_figures
     ]
@@ -737,52 +789,37 @@ def draw_interface(number_of_groups: int) -> VBox:
     # Create the box for the group comparison prospective scenario figure :
     group_comparison_prospective_scenario_box = AppLayout(
         center = group_comparison_prospective_scenario_figure,
-        layout = Layout(
-            width = "100%",
-            align_items = "center",
-            overflow = "hidden"
-        )
+        layout = Layout(**PROSPECTIVE_SCENARIO_BOX_LAYOUT)
     )
 
     # Create the boxes for the multidisciplinary figures (each box contains two figures) :
+    multidisciplinary_boxes = []
     if number_of_groups % 2 == 0:
-        # If the number of groups is even, we can pair them up (and centrer the reference scenario) :
-        multidisciplinary_boxes = [
-            HBox(
+        # If the number of groups is even, we can pair them up (and center the reference scenario) :
+        multidisciplinary_boxes.append(
+            Box(
                 [reference_multidisciplinary_figure],
-                layout = Layout(
-                    width = "100%",
-                    justify_content = "space-around",
-                    align_items = "flex-start"
+                layout = Layout(**MULTIDISCIPLINARY_BOX_LAYOUT)
+            )
+        )
+        for index in range(0, len(multidisciplinary_figures), 2):
+            multidisciplinary_boxes.append(
+                Box(
+                    multidisciplinary_figures[index : index + 2],
+                    layout = Layout(**MULTIDISCIPLINARY_BOX_LAYOUT)
                 )
             )
-        ] + [
-            HBox(
-                multidisciplinary_figures[index : index + 2],
-                layout = Layout(
-                    width = "100%",
-                    justify_content = "space-around",
-                    align_items = "flex-start"
-                )
-            )
-            for index in range(0, len(multidisciplinary_figures), 2)
-        ]
-
     else:
         # If the number of groups is odd, we add the reference scenario to the first box :
         all_multidisciplinary_figures = [reference_multidisciplinary_figure] + multidisciplinary_figures
 
-        multidisciplinary_boxes = [
-            HBox(
-                all_multidisciplinary_figures[index : index + 2],
-                layout = Layout(
-                    width = "100%",
-                    justify_content = "space-around",
-                    align_items = "flex-start"
+        for index in range(0, len(all_multidisciplinary_figures), 2):
+            multidisciplinary_boxes.append(
+                Box(
+                    all_multidisciplinary_figures[index : index + 2],
+                    layout = Layout(**MULTIDISCIPLINARY_BOX_LAYOUT)
                 )
             )
-            for index in range(0, len(all_multidisciplinary_figures), 2)
-        ]
 
     """
     Organize the layout of the interface using a container grid :
@@ -790,6 +827,7 @@ def draw_interface(number_of_groups: int) -> VBox:
     # Create the list of rows for the grid layout :
     rows = [
         explanations,
+        checkboxes_grid_title_box,
         checkboxes_grid,
         button_box,
         prospective_scenario_graphs_title_box,
@@ -801,6 +839,6 @@ def draw_interface(number_of_groups: int) -> VBox:
     ]
 
     # Create the container grid layout with the specified number of rows and one column :
-    container = VBox(rows, layout = Layout(width = "100%"))
+    container = VBox(rows, layout = Layout(**APP_VBOX_LAYOUT))
 
     return container
