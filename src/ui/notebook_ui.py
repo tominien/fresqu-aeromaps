@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Tuple, Optional, Union
 
 from crud.crud_cards import get_cards_name, get_card_id_by_name
 
@@ -15,7 +15,7 @@ from bqplot_figures.multidisciplinary_graph import MultidisciplinaryGraph, get_m
 
 import markdown
 
-from ipywidgets import VBox, HBox, Layout, AppLayout, Checkbox, Button, HTML, Label
+from ipywidgets import Box, VBox, HBox, Layout, GridspecLayout, AppLayout, Checkbox, Button, HTML, Label
 
 from utils import APPLICATION_EXPLANATIONS_PATH
 
@@ -65,33 +65,145 @@ def draw_explanations(markdown_file: str = APPLICATION_EXPLANATIONS_PATH) -> VBo
     )
 
 
-def initialize_checkboxes(number_of_groups: int) -> List[List[Checkbox]]:
+def create_cell_checkboxes_grid(
+        widget: Union[Checkbox, Label],
+        border_sides: List[str] = ["top", "bottom", "left", "right"]
+    ) -> Box:
     """
-    Initializes the checkbox widgets for each group.
+    Creates a cell for the checkboxes grid with the specified widget and border sides.
 
     #### Arguments :
-    - `number_of_groups` : The number of groups to create checkboxes for.
+    - `widget (Union[Checkbox, Label])` : The widget to place in the cell (either a Checkbox or a Label).
+    - `border_sides (List[str])` : The sides of the border to draw around the cell. Allowed values are "top", "bottom", "left", and "right".
+    """
+    # Check if the border sides are valid :
+    if not all(side in ["top", "bottom", "left", "right"] for side in border_sides):
+        raise ValueError("Invalid border side(s) specified.")
+
+    # Create the box style for the cell :
+    box_style = {
+        "box_sizing": "border-box"
+    }
+    for side in border_sides:
+        box_style[f"border_{side}"] = "1px solid lightgray"
+
+    # Create the box with the specified widget and style :
+    return Box(
+        children = [widget],
+        layout = Layout(
+            width           = "auto",
+            height          = "auto",
+            margin          = "0px",
+            padding         = "0px",
+            **box_style,
+            display         = "flex",
+            justify_content = "center",
+            align_items     = "center",
+            text_align      = "center",
+            overflow        = "hidden"
+        )
+    )
+
+
+def initialize_checkboxes_grid(number_of_groups: int) -> Tuple[GridspecLayout, List[List[Checkbox]]]:
+    """
+    Initializes the grid layout for the checkboxes and returns it along with a list of lists containing the checkbox widgets.
+
+    #### Arguments :
+    - `number_of_groups (int)` : The number of groups to create checkboxes for.
 
     #### Returns :
+    - `GridspecLayout` : The grid layout containing the checkboxes.
     - `List[List[Checkbox]]` : A list of lists containing the checkbox widgets for each group.
     """
-    # Get the list of cards names :
-    cards_list = CARDS_NAMES
+    # Get the number of rows and columns for the grid layout :
+    number_of_rows    = len(CARDS_NAMES) + 1 # +1 for the "Groups names" row.
+    number_of_columns = number_of_groups + 2 # +2 for the "Cards names" column and the "Reference scenario" column.
 
-    # Create a list of widgets for each group :
-    checkboxes_lists = []
-    for _ in range(number_of_groups):
-        widgets = [
-            Checkbox(
-                value = False,
-                description = card,
-                indent = False
+    # Initialize the grid layout for the checkboxes :
+    grid = GridspecLayout(
+        number_of_rows,
+        number_of_columns,
+        layout = Layout(
+            width    = "100%",
+            grid_gap = "0px",
+            margin   = "0px",
+            padding  = "0px"
+        )
+    )
+
+    # Initialise the top-left cell (as empty) :
+    grid[0, 0] = create_cell_checkboxes_grid(
+        Label(value = ""),
+        ["right", "bottom"]
+    )
+
+    # Initialise the "Cards names" column :
+    for index_row, card_name in enumerate(CARDS_NAMES):
+        label = Label(
+            value = card_name,
+            layout = Layout(
+                display         = "flex",
+                justify_content = "center",
+                align_items     = "center",
+                text_align      = "center"
             )
-            for card in cards_list
-        ]
-        checkboxes_lists.append(widgets)
+        )
+        grid[index_row + 1, 0] = create_cell_checkboxes_grid(label, ["right", "bottom", "left"])
 
-    return checkboxes_lists
+    # Initialize the "Reference scenario" column :
+    grid[0, 1] = create_cell_checkboxes_grid(Label(value = "Scénario de référence"), ["top", "right", "bottom"])
+    for index_row, card_name in enumerate(CARDS_NAMES):
+        checkbox = Checkbox(
+            value = False,
+            indent = False,
+            disabled = True, # Disable the checkbox for the reference scenario.
+            layout = Layout(
+                display         = "flex",
+                justify_content = "center",
+                align_items     = "center",
+                margin          = "10px 0px 0px 0px"
+            )
+        )
+        grid[index_row + 1, 1] = create_cell_checkboxes_grid(checkbox, ["right", "bottom"])
+
+    # initialize the "Groups" columns :
+    checkboxes_lists: List[List[Checkbox]] = [] # List to store the checkboxes for each group.
+    for index_column in range(2, number_of_columns):
+        # Create the label for the group name :
+        label = Label(
+            value = f"Groupe {index_column - 1}",
+            layout = Layout(
+                display         = "flex",
+                justify_content = "center",
+                align_items     = "center",
+                text_align      = "center"
+            )
+        )
+        grid[0, index_column] = create_cell_checkboxes_grid(label, ["top", "right", "bottom"])
+        # Create the checkboxes for each group :
+        group_checkboxes_list: List[Checkbox] = [] # List to store the checkboxes for the current group.
+        for index_row, card_name in enumerate(CARDS_NAMES):
+            # Create the checkbox for the current group :
+            checkbox = Checkbox(
+                value = False,
+                indent = False,
+                layout = Layout(
+                    display         = "flex",
+                    justify_content = "center",
+                    align_items     = "center",
+                    margin          = "10px 0px 0px 0px"
+                )
+            )
+            # Create the cell with the checkbox :
+            cell = create_cell_checkboxes_grid(checkbox, ["right", "bottom"])
+            grid[index_row + 1, index_column] = cell
+            # Add the checkbox to the list of checkboxes for the current group :
+            group_checkboxes_list.append(checkbox)
+        # Add the list of checkboxes for the current group to the main list :
+        checkboxes_lists.append(group_checkboxes_list)
+
+    return grid, checkboxes_lists
 
 
 def initialize_process_engines(number_of_groups: int) -> List[ProcessEngine]:
@@ -408,11 +520,11 @@ def update_figures(
     new_data = [None] * number_of_groups # Initialize a list to store the new data for each group
     for index in range(number_of_groups):
         # Get the selected card IDs for the current group :
-        selected_ids = [
-            get_card_id_by_name(checkbox.description)
-            for checkbox in checkboxes_lists[index]
-            if checkbox.value
-        ]
+        selected_ids = []
+        for index_checkbox, checkbox in enumerate(checkboxes_lists[index]):
+            if checkbox.value:
+                # If the checkbox is checked, get the card ID by its name :
+                selected_ids.append(get_card_id_by_name(CARDS_NAMES[index_checkbox]))
 
         # Compute the new data for the current process engine :
         new_data[index] = process_engines[index].compute(
@@ -473,9 +585,9 @@ def draw_interface(number_of_groups: int) -> VBox:
     reference_process_engine_data = reference_process_engine.compute()
 
     # Initialize the process engines (and checkboxes) for each group :
-    checkboxes_lists     = initialize_checkboxes(number_of_groups)
-    process_engines      = initialize_process_engines(number_of_groups)
-    process_engines_data = compute_process_engines(process_engines, checkboxes_lists)
+    checkboxes_grid, checkboxes_lists = initialize_checkboxes_grid(number_of_groups)
+    process_engines                   = initialize_process_engines(number_of_groups)
+    process_engines_data              = compute_process_engines(process_engines, checkboxes_lists)
 
     """
     Prospective Scenario Graphs initialization :
@@ -612,12 +724,6 @@ def draw_interface(number_of_groups: int) -> VBox:
 
     prospective_scenario_boxes = [
         AppLayout(
-            left_sidebar = VBox(
-                checkboxes_lists[index],
-                layout = Layout(
-                    margin = "0 15px 0 15px"
-                )
-            ),
             center = figure,
             layout = Layout(
                 width = "100%",
@@ -625,7 +731,7 @@ def draw_interface(number_of_groups: int) -> VBox:
                 overflow = "hidden"
             ),
         )
-        for index, figure in enumerate(prospective_scenarios_figures)
+        for figure in prospective_scenarios_figures
     ]
 
     # Create the box for the group comparison prospective scenario figure :
@@ -684,6 +790,7 @@ def draw_interface(number_of_groups: int) -> VBox:
     # Create the list of rows for the grid layout :
     rows = [
         explanations,
+        checkboxes_grid,
         button_box,
         prospective_scenario_graphs_title_box,
         reference_prospective_scenario_box,
