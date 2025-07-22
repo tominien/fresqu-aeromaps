@@ -36,29 +36,32 @@ Vous trouverez ci-dessus un tutoriel de lancement en local pour chaque version.
 Tutoriel de lancement de la version "web" :
 
 - Via le `Dockerfile`, version utilisée par [Render](https://render.com) **[VERSION RECOMMANDÉE]** :
-    - `docker build -t fresque-aeromaps .` *Cette commande est un peu longue à s'exécuter, il y en aura pour environ 15 minutes.*
+    - `docker build -t fresque-aeromaps .`
+        - *Cette commande est un peu longue à s'exécuter, il y en aura pour environ 10-15 minutes.*
     - `docker run --rm -p 8888:8888 fresque-aeromaps`
 - Via le fichier racine `app.py` :
-    - `panel serve app.py --address=0.0.0.0 --port=8888 --allow-websocket-origin="*" --prefix="" --index="app" --log-level='error'`
+    - `panel serve app.py --address=0.0.0.0 --port=8888 --allow-websocket-origin="*" --prefix="" --index="app"`     
+        - *Lors du debug, il est également recommandé d'ajouter l'option `--autoreload` afin de ne pas avoir à relancer l'application à chaque modification du code source.*
 - L'application sera alors accessible à l'adresse http://localhost:8888 (et http://localhost:8888/app).
 
 Tutoriel de lancement de la version "Jupyter Notebook" :
 
 - Via le fichier racine `app.ipynb` :
-    - `jupyter notebook app.ipynb` *Si vous utilisez Visual Studio Code, veillez bien à choisir le Kernel correspondant à l'environnement `.venv` en haut à droite du notebook.*
+    - `jupyter notebook app.ipynb`
+        - *Si vous utilisez Visual Studio Code, veillez bien à choisir le Kernel correspondant à l'environnement `.venv` en haut à droite du notebook.*
 
 ## Guide de lancement EN LIGNE
 
 L'application **Fresqu'AéroMAPS** est hébergée en ligne sur 2 sites.
 
-1. Sur [render.com](https://render.com), via l'adresse suivante : https://tominien.onrender.com.
+1. Sur [render.com](https://render.com), à l'adresse suivante : https://tominien.onrender.com.
     - Le temps de chargement initial et de mise à jour de l'application peut être un peu long.
 2. Sur [binder.org](https://mybinder.org), en cliquant sur le bouton suivant : [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tominien/Fresqu-aeromaps/HEAD?urlpath=%2Fdoc%2Ftree%2Fapp.ipynb)
     - Cette version est plus rapide que celle hébergée sur Render, mais elle est moins intuitive.
 
 ## Template du fichier d'environnement
 
-Afin que Python "reconnaisse" bien le dossier `src/` du projet comme étant celui contenant tout le code source, il est fortement recommandé de créer un fichier `.env`, avec le contenu suivant à la racine du projet :
+Afin que Python reconnaisse correctement le dossier `src/` du projet comme étant celui du code source du projet, vous devez créer un fichier `.env` à la racine du projet, avec le contenu suivant :
 ```
 PYTHONPATH=./src
 ```

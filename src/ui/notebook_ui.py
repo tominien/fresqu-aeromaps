@@ -279,7 +279,7 @@ def draw_prospective_scenario_group_comparison_graph(
         process_engines_data,
         y_scale = shared_y_scale
     )
-    figure.fig_margin = {"top": 60, "bottom": 60, "left": 60, "right": 150}
+    figure.fig_margin = {"top": 60, "bottom": 60, "left": 60, "right": 180}
 
     return figure
 

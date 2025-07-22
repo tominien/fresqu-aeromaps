@@ -110,16 +110,15 @@ def get_y_aspects_areas(process_data: Dict[str, Any]) -> List[Series]:
 
 def get_y_prospective_lines_groups_comparison(
         reference_process_data: Dict[str, Any],
-        groups_process_data: List[Dict[str, Any]],
-        merge_groups_equal_to_reference: bool = True
-    ) -> Tuple[List[Series], List[str], List[int]]:
+        groups_process_data: List[Dict[str, Any]]
+    ) -> Tuple[List[Series], List[str], List[List[int]]]:
     """
     Get the y-values of the prospective lines for group comparison from the process data.
 
     #### Arguments :
     - `reference_process_data (Dict[str, Any])` : The process data containing the necessary information to calculate the prospective lines data from a reference scenario.
     - `groups_process_data (List[Series])` : A list of all of the process data for each group scenario.
-    - `merge_groups_equal_to_reference (bool)` : Whether to merge the groups lines that are equal to the reference scenario's "all aspects" line.
+    - `merge_group_equal_to_reference (bool)` : Whether to merge the group of lines that are equal to the reference scenario's "all aspects" line.
         If `True`, the groups lines that are equal to the reference scenario's "all aspects" line will be merged into the "all aspects" line and label.
 
     #### Returns :
@@ -127,7 +126,8 @@ def get_y_prospective_lines_groups_comparison(
         - The reference scenario (no aspect and all aspects lines).
         - The group scenarios (no aspect line for each group).
     - `List[str]` : A list of labels corresponding to each prospective line.
-    - `List[int]` : A list of group indices that are equal to the reference scenario's "all aspects" line.
+    - `List[List[int]]` : A list of lists containing the group indices where each "group of lines" corresponds to the same line.
+        Does not include a list of all the groups that are equal to the reference scenario's "all aspects" line.
     """
     # Get the y-values of the prospective lines for the reference scenario :
     reference_lines = get_y_prospective_lines(reference_process_data)
@@ -143,11 +143,11 @@ def get_y_prospective_lines_groups_comparison(
     """
     # Merge the groups lines following the exact same values :
     groups_lines: List[Series]               = []
-    groups_ids_equal_to_reference: List[int] = []
-    groups_ids: List[List[int]]              = []
+    groups_ids_equal_to_reference: List[int] = [] # List of group indices that are equal to the reference scenario's "all aspects" line.
+    groups_ids: List[List[int]]              = [] # List of lists containing the group indices where each "group of lines" corresponds to the same line.
     for index_line, group_line in enumerate(all_groups_lines):
         # Check if the line is equal to the reference scenario's "all aspects" line :
-        if merge_groups_equal_to_reference and group_line.equals(reference_lines[1]):
+        if group_line.equals(reference_lines[1]):
             groups_ids_equal_to_reference.append(index_line + 1)
             continue
         # Check if the line already exists in the list :
@@ -197,7 +197,7 @@ def get_y_prospective_lines_groups_comparison(
     return (
         reference_lines + groups_lines,
         labels,
-        groups_ids_equal_to_reference
+        groups_ids # Does NOT includes the list of groups that are equal to the reference scenario's "all aspects" line.
     )
 
 
@@ -216,61 +216,9 @@ def format_final_value(value: float) -> str:
     return f"{str(int(value))} Mt CO₂"
 
 
-def format_final_values(
-        values: List[float],
-        include_group_names: bool = False,
-        groups_equal_to_reference: Optional[List[int]] = None
-    ) -> List[str]:
-    """
-    Format the final value of a list of values.
-
-    #### Arguments :
-    - `values (List[float])` : The values to format.
-    - `include_group_names (bool)` : Whether to include the group names in the formatted values. If `True`, the group names will be included in the formatted values, following this logic :
-        - Index 0 : Value of the "no aspect" line from the reference scenario.
-        - Index 1 : Value of the "all aspects" line from the reference scenario.
-        - Index k : k ∈ [2, len(values) - 1] : Value of the "no aspect" line from the group scenario k - 1, with the group name included in the formatted value.
-    - `groups_equal_to_reference (List[int])` : A list of group indices that are equal to the reference scenario's "all aspects" line.
-        If a group index is in this list, the final value of the corresponding line will not be displayed (because this line is already displayed as the "all aspects" line).
-
-    #### Returns :
-    - `str` : The formatted final values as a list of strings.
-    """
-    # Format the final values to include the 'Mt CO₂' suffix :
-    final_values_CO2_suffix = [
-        format_final_value(value)
-        for value in values
-    ]
-
-    # Add the reference / group name to the formatted final values (used for the group comparison graph) :
-    if include_group_names:
-        final_values_text = [
-            final_values_CO2_suffix[0],
-            f"{final_values_CO2_suffix[1]} (Référence)"
-        ]
-
-        group_index = 1
-        for final_value in final_values_CO2_suffix[2:]:
-            # Get the right group index :
-            while group_index in groups_equal_to_reference:
-                group_index += 1
-
-            # Add the final value with the group name :
-            final_values_text.append(
-                f"{final_value} (Groupe {group_index})" if final_value != final_values_CO2_suffix[1] else ""
-            )
-            group_index += 1
-    else:
-        final_values_text = final_values_CO2_suffix
-
-    return final_values_text
-
-
 def get_y_final_values_lines(
         lines: List[Series],
-        minimal_distance: float = 100,
-        include_group_names: bool = False,
-        groups_equal_to_reference: Optional[List[int]] = None
+        minimal_distance: float = 100
     ) -> Tuple[List[float], List[str]]:
     """
     Get the final y-values and formatted final values of each line.
@@ -279,13 +227,6 @@ def get_y_final_values_lines(
     - `lines (List[Series])` : A list of Series objects representing the y-values of the lines.
     - `minimal_distance (float)` : The minimal required distance between all final y-values of the lines to display them.
         If any two final y-values are closer than the minimal distance, no final values will not be displayed.
-    - `include_group_names (bool)` : Whether to include the group names in the formatted final values.
-        If `True`, the group names will be included in the formatted values, following this logic :
-        - Index 0 : Value of the "no aspect" line from the reference scenario.
-        - Index 1 : Value of the "all aspects" line from the reference scenario.
-        - Index k : k ∈ [2, len(lines) - 1] : Value of the "no aspect" line from the group scenario k - 1, with the group name included in the formatted value.
-    - `groups_equal_to_reference (List[int])` : A list of group indices that are equal to the reference scenario's "all aspects" line.
-        If a group index is in this list, the final value of the corresponding line will not be displayed (because this line is already displayed as the "all aspects" line).
 
     #### Returns :
     - `List[float]` : A list containing the final y-values of the lines.
@@ -301,6 +242,109 @@ def get_y_final_values_lines(
     if 0 < first_positive_minimal_distance <= minimal_distance:
         final_y_values_text = [""] * len(final_y_values)
     else:
-        final_y_values_text = format_final_values(final_y_values, include_group_names, groups_equal_to_reference)
+        final_y_values_text = [
+            format_final_value(value)
+            for value in final_y_values
+        ]
+
+    return final_y_values, final_y_values_text
+
+
+def format_final_values_group_comparison(
+        values: List[float],
+        include_group_names: bool = True,
+        groups_ids: Optional[List[List[int]]] = None
+    ) -> List[str]:
+    """
+    Format the final value of a list of values.
+    This function should only be used for the ProspectiveScenarioGroupComparison graphs.
+
+    #### Arguments :
+    - `values (List[float])` : The values to format.
+    - `include_group_names (bool)` : Whether to include the group names in the formatted values. If `True`, the group names will be included in the formatted values, following this logic :
+        - Index 0 : Value of the "no aspect" line from the reference scenario.
+        - Index 1 : Value of the "all aspects" line from the reference scenario.
+        - Index k : k ∈ [2, len(values) - 1] : Value of the "no aspect" line from the group scenario k - 1, with the group name included in the formatted value.
+    - `groups_ids (List[List[int]])` : A list of group indices where each "group of lines" corresponds to the same line (except for the list of groups that are equal to the reference scenario's "all aspects" line).
+
+    #### Returns :
+    - `str` : The formatted final values as a list of strings.
+    """
+    # Check if the groups_ids is the correct length :
+    if groups_ids is not None and len(groups_ids) != len(values) - 2 : # -2 because we have the "no aspect" and "all aspects" lines from the reference scenario.
+        raise ValueError("Invalid groups_ids length.")
+
+    # Format the final values to include the 'Mt CO₂' suffix :
+    final_values_CO2_suffix = [
+        format_final_value(value)
+        for value in values
+    ]
+
+    # Add the "Reference" / "Groups names" to the formatted final values :
+    if include_group_names:
+        # Label of the lines from the reference scenario :
+        final_values_text = [
+            final_values_CO2_suffix[0],
+            f"{final_values_CO2_suffix[0]} (Référence)"
+        ]
+
+        # Label of each group of lines :
+        for final_value, group_ids in zip(final_values_CO2_suffix[2:], groups_ids):
+            if len(group_ids) == 1:
+                final_values_text.append(
+                    f"{final_value} (Groupe {group_ids[0]})"
+                )
+            elif len(group_ids) < 4:
+                remaining_groups = ", ".join(str(index) for index in group_ids[:-1])
+                final_values_text.append(
+                    f"{final_value} (Groupes {remaining_groups} & {group_ids[-1]})"
+                )
+            else: # If there is more than 3 groups, juste display the first 2 followed by "..." :
+                remaining_groups = ", ".join(str(index) for index in group_ids[:2])
+                final_values_text.append(
+                    f"{final_value} (Groupes {remaining_groups}, ...)"
+                )
+    else:
+        final_values_text = final_values_CO2_suffix
+
+    return final_values_text
+
+
+def get_y_final_values_lines_group_comparison(
+        lines: List[Series],
+        minimal_distance: float = 100,
+        include_group_names: bool = True,
+        groups_ids: Optional[List[List[int]]] = None
+    ) -> Tuple[List[float], List[str]]:
+    """
+    Get the final y-values and formatted final values of each line.
+    This function should only be used for the ProspectiveScenarioGroupComparison graphs.
+
+    #### Arguments :
+    - `lines (List[Series])` : A list of Series objects representing the y-values of the lines.
+    - `minimal_distance (float)` : The minimal required distance between all final y-values of the lines to display them.
+        If any two final y-values are closer than the minimal distance, no final values will not be displayed.
+    - `include_group_names (bool)` : Whether to include the group names in the formatted final values.
+        If `True`, the group names will be included in the formatted values, following this logic :
+        - Index 0 : Value of the "no aspect" line from the reference scenario.
+        - Index 1 : Value of the "all aspects" line from the reference scenario.
+        - Index k : k ∈ [2, len(lines) - 1] : Value of the "no aspect" line from the group scenario k - 1, with the group name included in the formatted value.
+    - `groups_ids (Optional[List[List[int]]])` : A list of group indices where each "group of lines" corresponds to the same line (except for the list of groups that are equal to the reference scenario's "all aspects" line).
+
+    #### Returns :
+    - `List[float]` : A list containing the final y-values of the lines.
+    - `List[str]` : A list of **string-formatted** final values for each line.
+    """
+    # Get the final y-values of the lines :
+    final_y_values: List[float] = [
+        line.iloc[-1] for line in lines
+    ]
+
+    # Get the formatted final values (if any two final values are closer than the minimal distance, don't display any final values) :
+    first_positive_minimal_distance = get_first_positive_minimal_distance(final_y_values)
+    if 0 < first_positive_minimal_distance <= minimal_distance:
+        final_y_values_text = [""] * len(final_y_values)
+    else:
+        final_y_values_text = format_final_values_group_comparison(final_y_values, include_group_names, groups_ids)
 
     return final_y_values, final_y_values_text
