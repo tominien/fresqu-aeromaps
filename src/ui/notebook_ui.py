@@ -150,7 +150,8 @@ MULTIDISCIPLINARY_LEGEND_HBOX_LAYOUT = {
 
 MULTIDISCIPLINARY_GRAPH_AND_LEGEND_VBOX_LAYOUT = {
     "width" : "50%",
-    "align_items" : "center"
+    "align_items" : "center",
+    "overflow" : "hidden"
 }
 
 APP_VBOX_LAYOUT = {
