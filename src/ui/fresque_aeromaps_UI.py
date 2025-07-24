@@ -1,11 +1,8 @@
 from typing import Any, Dict, List
 
-from core.aeromaps_utils.process_engine import ProcessEngine
-
 from bqplot import LinearScale
-from bqplot_figures.base_graph import BaseGraph
-from bqplot_figures.prospective_scenario_graph import get_prospective_scenario_y_scales
-from bqplot_figures.multidisciplinary_graph import get_multidisciplinary_graphs_y_scales
+from bqplot_figures.prospective_scenario_graph import ProspectiveScenarioGraph, get_prospective_scenario_y_scales
+from bqplot_figures.multidisciplinary_graph import MultidisciplinaryGraph, get_multidisciplinary_graphs_y_scales
 
 from ipywidgets import Box, VBox, Layout, Checkbox, Button
 
@@ -22,6 +19,7 @@ from ui.utils.fresque_aeromaps_UI_widgets import (
     initialize_checkboxes_grid,
     draw_explanations,
     draw_group_selector_title,
+    draw_group_selector_button,
     draw_checkboxes_grid_title,
     draw_prospective_scenario_graphs_title,
     draw_multidisciplinary_graphs_title,
@@ -39,6 +37,75 @@ from ui.utils.fresque_aeromaps_UI_figures import (
 )
 
 
+
+
+def create_prospective_scenarios_boxes(prospective_scenarios_figures: List[ProspectiveScenarioGraph]) -> List[Box]:
+    """
+    Creates a list of boxes containing the prospective scenario figures.
+
+    #### Parameters :
+    - `prospective_scenarios_figures (List[ProspectiveScenarioGraph])` : A list of prospective scenario figures to be displayed in boxes.
+
+    #### Returns :
+    - `List[Box]` : A list of boxes containing the prospective scenario figures.
+    """
+    prospective_scenarios_boxes = []
+    for figure in prospective_scenarios_figures:
+        prospective_scenarios_boxes.append(
+            Box(
+                [figure],
+                layout = Layout(**PROSPECTIVE_SCENARIO_BOX_LAYOUT)
+            )
+        )
+
+    return prospective_scenarios_boxes
+
+
+def create_multidisciplinary_boxes(
+        number_of_groups: int,
+        reference_multidisciplinary_figure: MultidisciplinaryGraph,
+        multidisciplinary_figures: List[MultidisciplinaryGraph]
+    ) -> List[Box]:
+    """
+    Creates a list of boxes containing the multidisciplinary figures (each box contains two figures).
+
+    #### Parameters :
+    - `multidisciplinary_figures (List[MultidisciplinaryGraph])` : A list of multidisciplinary figures to be displayed in boxes.
+
+    #### Returns :
+    - `List[Box]` : A list of boxes containing the multidisciplinary figures.
+    """
+    multidisciplinary_boxes = []
+
+    # If the number of groups is even, we can pair them up (and center the reference scenario) :
+    if number_of_groups % 2 == 0:
+        multidisciplinary_boxes.append(
+            Box(
+                [reference_multidisciplinary_figure],
+                layout = Layout(**MULTIDISCIPLINARY_BOX_LAYOUT)
+            )
+        )
+        for index in range(0, len(multidisciplinary_figures), 2):
+            multidisciplinary_boxes.append(
+                Box(
+                    multidisciplinary_figures[index : index + 2],
+                    layout = Layout(**MULTIDISCIPLINARY_BOX_LAYOUT)
+                )
+            )
+
+    # If the number of groups is odd, we add the reference scenario to the first box :
+    else:
+        all_multidisciplinary_figures = [reference_multidisciplinary_figure] + multidisciplinary_figures
+
+        for index in range(0, len(all_multidisciplinary_figures), 2):
+            multidisciplinary_boxes.append(
+                Box(
+                    all_multidisciplinary_figures[index : index + 2],
+                    layout = Layout(**MULTIDISCIPLINARY_BOX_LAYOUT)
+                )
+            )
+
+    return multidisciplinary_boxes
 
 
 class FresqueAeroMapsUI:
@@ -104,6 +171,31 @@ class FresqueAeroMapsUI:
             )
 
 
+    def _update_checkboxes_lists(self, old_number_of_groups: int) -> None:
+        """
+        Updates the checkboxes lists based on the new number of groups.
+
+        #### Arguments :
+        - `old_number_of_groups` : The previous number of groups to update the checkboxes lists.
+        """
+        # If the number of groups has not changed, do nothing :
+        if old_number_of_groups == self.number_of_groups:
+            return
+
+        # Update the checkboxes lists based on the new number of groups :
+        if self.number_of_groups > old_number_of_groups:
+            # Add new checkboxes for the new groups :
+            for _ in range(self.number_of_groups - old_number_of_groups):
+                self.checkboxes_lists.append(
+                    [
+                        Checkbox(value = False) for _ in range(len(CARDS_NAMES))
+                    ]
+                )
+        else:
+            # Remove checkboxes for the removed groups :
+            self.checkboxes_lists = self.checkboxes_lists[:self.number_of_groups]
+
+
     def _initialize_process_engines(self) -> None:
         """
         Initializes the process engines used in the interface.
@@ -121,6 +213,30 @@ class FresqueAeroMapsUI:
 
         # Compute the reference process engine data and the process engines data for each group :
         self._compute_process_engines(True) # The reference scenario only needs to be computed once.
+
+
+    def _update_process_engines(self, old_number_of_groups: int) -> None:
+        """
+        Updates the process engines based on the new number of groups and the checkboxes lists.
+
+        #### Arguments :
+        - `old_number_of_groups` : The previous number of groups to update the process engines.
+        """
+        # If the number of groups has not changed, do nothing :
+        if old_number_of_groups == self.number_of_groups:
+            return
+
+        # Update the process engines list based on the new number of groups :
+        if self.number_of_groups > old_number_of_groups:
+            # Add new process engines for the new groups :
+            for _ in range(self.number_of_groups - old_number_of_groups):
+                self.process_engines.append(initialize_process_engine())
+        else:
+            # Remove process engines for the removed groups :
+            self.process_engines = self.process_engines[:self.number_of_groups]
+
+        # Compute the process engines data for each group (even the old ones) based on the selected checkboxes :
+        self._compute_process_engines()
 
 
     def _initialize_prospective_scenario_graphs(self) -> None:
@@ -167,6 +283,51 @@ class FresqueAeroMapsUI:
         )
 
 
+    def _update_prospective_scenario_graphs(self, old_number_of_groups: int) -> None:
+        """
+        Updates the prospective scenario graphs based on the selected checkboxes and the process engines.
+
+        #### Preconditions :
+        - The `self._initialize_prospective_scenario_graphs`, `self._update_checkboxes_lists` and `self._update_process_engines` functions must be called before this function.
+
+        #### Arguments :
+        - `old_number_of_groups` : The previous number of groups to update the prospective scenario graphs.
+        """
+        # If the number of groups has not changed, do nothing :
+        if old_number_of_groups == self.number_of_groups:
+            return
+
+        # Update the shared y-axis scale for the prospective scenario graphs :
+        self.prospective_scenario_graphs_shared_y_scale.min, self.prospective_scenario_graphs_shared_y_scale.max = get_prospective_scenario_y_scales(self.process_engines_data)
+
+        # Update the prospective scenario graphs list based on the new number of groups :
+        if self.number_of_groups > old_number_of_groups:
+            # Add new prospective scenario graphs for the new groups :
+            for index in range(self.number_of_groups - old_number_of_groups):
+                new_prospective_scenarios_graph = initialize_prospective_scenario_graph(f"Scénario du groupe {old_number_of_groups + index + 1}")
+                self.prospective_scenarios_graphs.append(new_prospective_scenarios_graph)
+                self.prospective_scenarios_figures.append(
+                    draw_prospective_scenario_graph(
+                        new_prospective_scenarios_graph,
+                        self.process_engines_data[old_number_of_groups + index],
+                        self.prospective_scenario_graphs_shared_y_scale
+                    )
+                )
+        else:
+            # Remove prospective scenario graphs for the removed groups :
+            self.prospective_scenarios_graphs = self.prospective_scenarios_graphs[:self.number_of_groups]
+            self.prospective_scenarios_figures = self.prospective_scenarios_figures[:self.number_of_groups]
+
+        # Update the group comparison prospective scenario graph :
+        self.group_comparison_prospective_scenario_graph = initialize_prospective_scenario_group_comparison_graph(self.number_of_groups)
+        self.group_comparison_prospective_scenario_figure = draw_prospective_scenario_group_comparison_graph(
+            self.group_comparison_prospective_scenario_graph,
+            self.reference_process_engine_data,
+            self.process_engines_data,
+            self.prospective_scenario_graphs_shared_y_scale
+        )
+
+
     def _initialize_multidisciplinary_graphs(self) -> None:
         """
         Initializes the multidisciplinary graphs used in the interface.
@@ -202,6 +363,42 @@ class FresqueAeroMapsUI:
             )
 
 
+    def _update_multidisciplinary_graphs(self, old_number_of_groups: int) -> None:
+        """
+        Updates the multidisciplinary graphs based on the selected checkboxes and the process engines.
+
+        #### Preconditions :
+        - The `self._initialize_multidisciplinary_graphs`, `self._update_checkboxes_lists` and `self._update_process_engines` functions must be called before this function.
+
+        #### Arguments :
+        - `old_number_of_groups` : The previous number of groups to update the multidisciplinary graphs.
+        """
+        # If the number of groups has not changed, do nothing :
+        if old_number_of_groups == self.number_of_groups:
+            return
+
+        # Update the shared y-axis scale for the multidisciplinary graphs :
+        self.multidisciplinary_graphs_shared_y_scale.min, self.multidisciplinary_graphs_shared_y_scale.max = get_multidisciplinary_graphs_y_scales(self.process_engines_data)
+
+        # Update the multidisciplinary graphs list based on the new number of groups :
+        if self.number_of_groups > old_number_of_groups:
+            # Add new multidisciplinary graphs for the new groups :
+            for index in range(self.number_of_groups - old_number_of_groups):
+                new_multidisciplinary_graph = initialize_multidisciplinary_graph(f"Scénario du groupe {old_number_of_groups + index + 1}")
+                self.multidisciplinary_graphs.append(new_multidisciplinary_graph)
+                self.multidisciplinary_figures.append(
+                    draw_multidisciplinary_graph(
+                        new_multidisciplinary_graph,
+                        self.process_engines_data[old_number_of_groups + index],
+                        self.multidisciplinary_graphs_shared_y_scale
+                    )
+                )
+        else:
+            # Remove multidisciplinary graphs for the removed groups :
+            self.multidisciplinary_graphs = self.multidisciplinary_graphs[:self.number_of_groups]
+            self.multidisciplinary_figures = self.multidisciplinary_figures[:self.number_of_groups]
+
+
     def _build_explanation_section(self) -> VBox:
         """
         Builds the explanation section of the interface.
@@ -229,9 +426,17 @@ class FresqueAeroMapsUI:
             default_value = self.number_of_groups
         )
 
+        # Create a button to update the interface based on the selected number of groups :
+        self.group_selector_button = draw_group_selector_button()
+        self.group_selector_button.on_click(lambda button: self._on_group_selector_change())
+
         # Create the group selector section :
         self.group_selector_section = VBox(
-            [self.group_selector_title, self.group_selector],
+            [
+                self.group_selector_title,
+                self.group_selector,
+                self.group_selector_button
+            ],
             layout = Layout(**SECTION_VBOX_LAYOUT)
         )
 
@@ -273,6 +478,23 @@ class FresqueAeroMapsUI:
         return self.checkboxes_grid_section
 
 
+    def _update_checkboxes_grid_section(self) -> VBox:
+        """
+        Updates the checkboxes grid section of the interface.
+        """
+        # Rebuild the checkboxes grid section with the updated checkboxes grid :
+        self.checkboxes_grid = initialize_checkboxes_grid(self.number_of_groups, self.checkboxes_lists)
+
+        # Update the checkboxes grid section with the new checkboxes grid :
+        self.checkboxes_grid_section.children = [
+            self.checkboxes_grid_title,
+            self.checkboxes_grid,
+            self.update_button_box
+        ]
+
+        return self.checkboxes_grid_section
+
+
     def _build_prospective_scenario_section(self) -> VBox:
         """
         Builds the prospective scenario section of the interface.
@@ -292,14 +514,7 @@ class FresqueAeroMapsUI:
             layout = Layout(**PROSPECTIVE_SCENARIO_BOX_LAYOUT)
         )
 
-        self.prospective_scenario_boxes = []
-        for figure in self.prospective_scenarios_figures:
-            self.prospective_scenario_boxes.append(
-                Box(
-                    [figure],
-                    layout = Layout(**PROSPECTIVE_SCENARIO_BOX_LAYOUT)
-                )
-            )
+        self.prospective_scenarios_boxes = create_prospective_scenarios_boxes(self.prospective_scenarios_figures)
 
         # Create the box for the group comparison prospective scenario figure :
         self.group_comparison_prospective_scenario_box = Box(
@@ -312,11 +527,33 @@ class FresqueAeroMapsUI:
             [
                 self.prospective_scenario_graphs_title,
                 self.reference_prospective_scenario_box,
-                *self.prospective_scenario_boxes,
+                *self.prospective_scenarios_boxes,
                 self.group_comparison_prospective_scenario_box
             ],
             layout = Layout(**SECTION_VBOX_LAYOUT)
         )
+
+        return self.prospective_scenario_section
+
+
+    def _update_prospective_scenario_section(self) -> VBox:
+        """
+        Updates the prospective scenario section of the interface.
+        """
+        # Rebuild the prospective scenario section with the updated prospective scenario boxes :
+        self.prospective_scenarios_boxes = create_prospective_scenarios_boxes(self.prospective_scenarios_figures)
+
+        # Update the prospective scenario section with the new prospective scenario boxes :
+        self.group_comparison_prospective_scenario_box = Box(
+            [self.group_comparison_prospective_scenario_figure],
+            layout = Layout(**PROSPECTIVE_SCENARIO_BOX_LAYOUT)
+        )
+        self.prospective_scenario_section.children = [
+            self.prospective_scenario_graphs_title,
+            self.reference_prospective_scenario_box,
+            *self.prospective_scenarios_boxes,
+            self.group_comparison_prospective_scenario_box
+        ]
 
         return self.prospective_scenario_section
 
@@ -335,35 +572,11 @@ class FresqueAeroMapsUI:
         self.multidisciplinary_graphs_title = draw_multidisciplinary_graphs_title()
 
         # Create the boxes for the multidisciplinary figures (each box contains two figures) :
-        self.multidisciplinary_boxes = []
-
-        # If the number of groups is even, we can pair them up (and center the reference scenario) :
-        if self.number_of_groups % 2 == 0:
-            self.multidisciplinary_boxes.append(
-                Box(
-                    [self.reference_multidisciplinary_figure],
-                    layout = Layout(**MULTIDISCIPLINARY_BOX_LAYOUT)
-                )
-            )
-            for index in range(0, len(self.multidisciplinary_figures), 2):
-                self.multidisciplinary_boxes.append(
-                    Box(
-                        self.multidisciplinary_figures[index : index + 2],
-                        layout = Layout(**MULTIDISCIPLINARY_BOX_LAYOUT)
-                    )
-                )
-
-        # If the number of groups is odd, we add the reference scenario to the first box :
-        else:
-            all_multidisciplinary_figures = [self.reference_multidisciplinary_figure] + self.multidisciplinary_figures
-
-            for index in range(0, len(all_multidisciplinary_figures), 2):
-                self.multidisciplinary_boxes.append(
-                    Box(
-                        all_multidisciplinary_figures[index : index + 2],
-                        layout = Layout(**MULTIDISCIPLINARY_BOX_LAYOUT)
-                    )
-                )
+        self.multidisciplinary_boxes = create_multidisciplinary_boxes(
+            self.number_of_groups,
+            self.reference_multidisciplinary_figure,
+            self.multidisciplinary_figures
+        )
 
         # Create the multidisciplinary section :
         self.multidisciplinary_section = VBox(
@@ -377,26 +590,24 @@ class FresqueAeroMapsUI:
         return self.multidisciplinary_section
 
 
-    def display_interface(self) -> VBox:
+    def _update_multidisciplinary_section(self) -> VBox:
         """
-        Assembles the interface by combining all the sections into a vertical box and returns it.
-
-        #### Returns :
-        - `VBox` : A vertical box containing the entire interface layout.
+        Updates the multidisciplinary section of the interface.
         """
-        # Create the container grid layout with the specified number of rows and one column :
-        self.interface = VBox(
-            [
-                self.explanation_section,
-                self.group_selector_section,
-                self.checkboxes_grid_section,
-                self.prospective_scenario_section,
-                self.multidisciplinary_section
-            ],
-            layout = Layout(**SECTION_VBOX_LAYOUT)
+        # Rebuild the multidisciplinary section with the updated multidisciplinary boxes :
+        self.multidisciplinary_boxes = create_multidisciplinary_boxes(
+            self.number_of_groups,
+            self.reference_multidisciplinary_figure,
+            self.multidisciplinary_figures
         )
 
-        return self.interface
+        # Update the multidisciplinary section with the new multidisciplinary boxes :
+        self.multidisciplinary_section.children = [
+            self.multidisciplinary_graphs_title,
+            *self.multidisciplinary_boxes
+        ]
+
+        return self.multidisciplinary_section
 
 
     def _update_figures(self, _button: Button = None) -> None:
@@ -421,62 +632,49 @@ class FresqueAeroMapsUI:
         )
 
 
-def update_figures(
-    _button: Button,
-    number_of_groups: int,
-    reference_process_engine_data: Dict[str, Any],
-    process_engines: List[ProcessEngine],
-    checkboxes_lists: List[List[Checkbox]],
-    graphs: Dict[str, List[BaseGraph]],
-    shared_y_scales: Dict[str, LinearScale]
-) -> None:
-    """
-    Updates the figures based on the selected checkboxes and the process engines.
+    def _on_group_selector_change(self, _button: Button = None) -> None:
+        """
+        Handles the change event of the group selector slider.
+        """
+        # Update the number of groups based on the slider value :
+        old_number_of_groups = self.number_of_groups
+        self.number_of_groups = self.group_selector.value
 
-    #### Arguments :
-    - `_button` : The button that triggered the update (not used in this function).
-    - `number_of_groups` : The number of groups to update the figures for.
-    - `reference_process_engine_data` : The data of the reference process engine to use for the comparison of Prospective Scenario Group Comparison Graph.
-    - `process_engines` : A list of process engines to compute the new data.
-    - `checkboxes_lists` : A list of lists containing the checkbox widgets for each group.
-    - `graphs` : A dictionary containing the prospective scenario graphs and multidisciplinary graphs.
+        # If the number of groups has not changed, do nothing :
+        if old_number_of_groups == self.number_of_groups:
+            return
 
-    #### Returns :
-    - `None` : This function does not return anything, it updates the graphs in place
-    """
-    # Get each type of graph from the dictionary :
-    prospective_scenario_graphs                 = graphs["prospective_scenarios_graphs"]
-    group_comparison_prospective_scenario_graph = graphs["prospective_scenario_group_comparison_graph"][0]
-    multidisciplinary_graphs                    = graphs["multidisciplinary_graphs"]
+        # Update the checkboxes lists and process engines :
+        self._update_checkboxes_lists(old_number_of_groups)
+        self._update_process_engines(old_number_of_groups)
 
-    # Compute each process based on the selected widgets :
-    new_data = [
-        compute_process_engine(process_engine, checkboxes)
-        for process_engine, checkboxes in zip(process_engines, checkboxes_lists)
-    ]
+        # Update the prospective scenario graphs and multidisciplinary graphs :
+        self._update_prospective_scenario_graphs(old_number_of_groups)
+        self._update_multidisciplinary_graphs(old_number_of_groups)
 
-    # Update the graphs shared y-axis :
-    prospective_scenario_graphs_shared_y_scale = shared_y_scales.get("prospective_scenario_y_scale", None)
-    multidisciplinary_graphs_shared_y_scale    = shared_y_scales.get("multidisciplinary_y_scale", None)
+        # Rebuild the interface elements impacted by the number of groups change :
+        self._update_checkboxes_grid_section()
+        self._update_prospective_scenario_section()
+        self._update_multidisciplinary_section()
 
-    if prospective_scenario_graphs_shared_y_scale is not None:
-        # Update the shared y-axis scale for the prospective scenario graphs :
-        min_y, max_y = get_prospective_scenario_y_scales(new_data)
-        prospective_scenario_graphs_shared_y_scale.min = min_y
-        prospective_scenario_graphs_shared_y_scale.max = max_y
 
-    if multidisciplinary_graphs_shared_y_scale is not None:
-        # Update the shared y-axis scale for the prospective scenario graphs :
-        min_y, max_y = get_multidisciplinary_graphs_y_scales(new_data)
-        multidisciplinary_graphs_shared_y_scale.min = min_y
-        multidisciplinary_graphs_shared_y_scale.max = max_y
+    def display_interface(self) -> VBox:
+        """
+        Assembles the interface by combining all the sections into a vertical box and returns it.
 
-    # Update each graph based on the selected widgets :
-    for index in range(number_of_groups):
-        prospective_scenario_graphs[index].update(new_data[index])
-        multidisciplinary_graphs[index].update(new_data[index])
+        #### Returns :
+        - `VBox` : A vertical box containing the entire interface layout.
+        """
+        # Create the container grid layout with the specified number of rows and one column :
+        self.interface = VBox(
+            [
+                self.explanation_section,
+                self.group_selector_section,
+                self.checkboxes_grid_section,
+                self.prospective_scenario_section,
+                self.multidisciplinary_section
+            ],
+            layout = Layout(**SECTION_VBOX_LAYOUT)
+        )
 
-    group_comparison_prospective_scenario_graph.update(
-        reference_process_engine_data,
-        new_data
-    )
+        return self.interface

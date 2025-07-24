@@ -204,6 +204,21 @@ def draw_group_selector_title() -> Box:
     )
 
 
+def draw_group_selector_button() -> Button:
+    """
+    Draws the button to update the interface based on the selected number of groups.
+
+    #### Returns :
+    - `Button` : The button to update the interface.
+    """
+    return Button(
+        description = "Mettre à jour le nombre de groupes",
+        button_style = "success",
+        style = BUTTON_STYLE,
+        layout = Layout(**BUTTON_LAYOUT)
+    )
+
+
 def draw_checkboxes_grid_title() -> Box:
     """
     Draws the title for the checkboxes selection grid section.
@@ -211,7 +226,7 @@ def draw_checkboxes_grid_title() -> Box:
     #### Returns :
     - `Box` : A box containing the title for the checkboxes selection grid.
     """
-    checkboxes_grid_title = HTML(f"<div style='margin:50px 0 25px 0; {get_style_string(TITLE_STYLE)}'>Sélection des cartes</div>")
+    checkboxes_grid_title = HTML(f"<div style='margin:75px 0 25px 0; {get_style_string(TITLE_STYLE)}'>Sélection des cartes</div>")
 
     return Box(
         [checkboxes_grid_title],
@@ -226,7 +241,7 @@ def draw_prospective_scenario_graphs_title() -> Box:
     #### Returns :
     - `Box` : A box containing the title for the prospective scenario graphs.
     """
-    prospective_scenario_graphs_title = HTML(f"<h1 style='margin:50px 0 0 0; {get_style_string(TITLE_STYLE)}'>Simulations de la trajectoire des émissions de CO₂ du transport aérien entre 2019 et 2050</h1>")
+    prospective_scenario_graphs_title = HTML(f"<h1 style='margin:75px 0 0 0; {get_style_string(TITLE_STYLE)}'>Simulations de la trajectoire des émissions de CO₂ du transport aérien entre 2019 et 2050</h1>")
 
     return Box(
         [prospective_scenario_graphs_title],
