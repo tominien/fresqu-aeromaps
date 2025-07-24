@@ -1,0 +1,482 @@
+from typing import Any, Dict, List
+
+from core.aeromaps_utils.process_engine import ProcessEngine
+
+from bqplot import LinearScale
+from bqplot_figures.base_graph import BaseGraph
+from bqplot_figures.prospective_scenario_graph import get_prospective_scenario_y_scales
+from bqplot_figures.multidisciplinary_graph import get_multidisciplinary_graphs_y_scales
+
+from ipywidgets import Box, VBox, Layout, Checkbox, Button
+
+from ui.utils.fresque_aeromaps_UI_constants import (
+    CARDS_NAMES,
+    DEFAULT_NUMBER_OF_GROUPS,
+    BUTTON_BOX_LAYOUT,
+    PROSPECTIVE_SCENARIO_BOX_LAYOUT,
+    MULTIDISCIPLINARY_BOX_LAYOUT,
+    SECTION_VBOX_LAYOUT
+)
+from ui.utils.fresque_aeromaps_UI_widgets import (
+    initialize_group_selector,
+    initialize_checkboxes_grid,
+    draw_explanations,
+    draw_group_selector_title,
+    draw_checkboxes_grid_title,
+    draw_prospective_scenario_graphs_title,
+    draw_multidisciplinary_graphs_title,
+    draw_update_button
+)
+from ui.utils.fresque_aeromaps_UI_figures import (
+    compute_process_engine,
+    initialize_process_engine,
+    initialize_prospective_scenario_graph,
+    initialize_prospective_scenario_group_comparison_graph,
+    initialize_multidisciplinary_graph,
+    draw_prospective_scenario_graph,
+    draw_prospective_scenario_group_comparison_graph,
+    draw_multidisciplinary_graph
+)
+
+
+
+
+class FresqueAeroMapsUI:
+    def __init__(
+            self,
+            default_number_of_groups: int = DEFAULT_NUMBER_OF_GROUPS
+            ) -> None:
+        """
+        Initializes the Fresque-AeroMaps application main interface.
+        To display the interface, you must call the `self.display_interface` method.
+
+        #### Arguments :
+        - `default_number_of_groups` : The default number of groups to display in the interface. Default to `DEFAULT_NUMBER_OF_GROUPS`.
+        """
+        # Check if the default number of groups is valid :
+        if not isinstance(default_number_of_groups, int) or not (1 <= default_number_of_groups <= 10):
+            raise ValueError("Le nombre de groupes doit être un entier entre 1 et 10.")
+        self.number_of_groups = default_number_of_groups
+
+        # Initialize the interface components :
+        self._initialize_checkboxes_lists()
+        self._initialize_process_engines()
+        self._initialize_prospective_scenario_graphs()
+        self._initialize_multidisciplinary_graphs()
+
+        # Build the interface sections :
+        self._build_explanation_section()
+        self._build_group_selector_section()
+        self._build_checkboxes_grid_section()
+        self._build_prospective_scenario_section()
+        self._build_multidisciplinary_section()
+
+
+    def _compute_process_engines(self, compute_reference_process: bool = False) -> None:
+        """
+        Computes the process engines data for each group based on the selected checkboxes.
+
+        #### Arguments :
+        - `compute_reference_process` : If True, computes the reference process engine data. Default to False.
+        """
+        # Compute the reference process engine data (if asked) :
+        if compute_reference_process:
+            self.reference_process_engine_data = compute_process_engine(self.reference_process_engine)
+
+        # Compute each process based on the selected widgets :
+        self.process_engines_data = []
+        for process_engine, checkboxes in zip(self.process_engines, self.checkboxes_lists):
+            self.process_engines_data.append(
+                compute_process_engine(process_engine, checkboxes)
+            )
+
+
+    def _initialize_checkboxes_lists(self) -> None:
+        """
+        Initializes the checkboxes lists for each group.
+        """
+        self.checkboxes_lists = []
+        for _ in range(self.number_of_groups):
+            self.checkboxes_lists.append(
+                [
+                    Checkbox(value = False) for _ in range(len(CARDS_NAMES)) # We don't set the visual elements here (indent and layout), they will be set in the `self._build_checkboxes_grid_section` function.
+                ]
+            )
+
+
+    def _initialize_process_engines(self) -> None:
+        """
+        Initializes the process engines used in the interface.
+
+        #### Preconditions :
+        - The `self._initialize_checkboxes_lists` function must be called before this function.
+        """
+        # Initialize the reference process engine :
+        self.reference_process_engine = initialize_process_engine()
+
+        # Initialize the process engines for each group :
+        self.process_engines = [
+            initialize_process_engine() for _ in range(self.number_of_groups)
+        ]
+
+        # Compute the reference process engine data and the process engines data for each group :
+        self._compute_process_engines(True) # The reference scenario only needs to be computed once.
+
+
+    def _initialize_prospective_scenario_graphs(self) -> None:
+        """
+        Initializes the prospective scenario graphs used in the interface.
+
+        #### Preconditions :
+        - The `self._initialize_process_engines` function must be called before this function.
+        """
+        # Initialize a shared y-axis for all prospective scenario graphs (make them all share the same scale) :
+        min_y, max_y = get_prospective_scenario_y_scales(self.process_engines_data)
+        self.prospective_scenario_graphs_shared_y_scale = LinearScale(min = min_y, max = max_y)
+
+        # Initialize the reference prospective scenario graph :
+        self.reference_prospective_scenario_graph = initialize_prospective_scenario_graph("Scénario de référence")
+        self.reference_prospective_scenario_figure = draw_prospective_scenario_graph(
+            self.reference_prospective_scenario_graph,
+            self.reference_process_engine_data,
+            self.prospective_scenario_graphs_shared_y_scale
+        )
+
+        # Initialize the prospective scenario graph for each group :
+        self.prospective_scenarios_graphs = [
+            initialize_prospective_scenario_graph(f"Scénario du groupe {index + 1}")
+            for index in range(self.number_of_groups)
+        ]
+        self.prospective_scenarios_figures = []
+        for prospective_scenario_graph, process_engine_data in zip(self.prospective_scenarios_graphs, self.process_engines_data):
+            self.prospective_scenarios_figures.append(
+                draw_prospective_scenario_graph(
+                    prospective_scenario_graph,
+                    process_engine_data,
+                    self.prospective_scenario_graphs_shared_y_scale
+                )
+            )
+
+        # Initialize the group comparison prospective scenario graph :
+        self.group_comparison_prospective_scenario_graph = initialize_prospective_scenario_group_comparison_graph(self.number_of_groups)
+        self.group_comparison_prospective_scenario_figure = draw_prospective_scenario_group_comparison_graph(
+            self.group_comparison_prospective_scenario_graph,
+            self.reference_process_engine_data,
+            self.process_engines_data,
+            self.prospective_scenario_graphs_shared_y_scale
+        )
+
+
+    def _initialize_multidisciplinary_graphs(self) -> None:
+        """
+        Initializes the multidisciplinary graphs used in the interface.
+
+        #### Preconditions :
+        - The `self._initialize_process_engines` function must be called before this function.
+        """
+        # Initialize a shared y-axis for all multidisciplinary graphs (make them all share the same scale) :
+        min_y, max_y = get_multidisciplinary_graphs_y_scales(self.process_engines_data)
+        self.multidisciplinary_graphs_shared_y_scale = LinearScale(min = min_y, max = max_y)
+
+        # Initialize the reference multidisciplinary graph :
+        self.reference_multidisciplinary_graph = initialize_multidisciplinary_graph("Scénario de référence")
+        self.reference_multidisciplinary_figure = draw_multidisciplinary_graph(
+            self.reference_multidisciplinary_graph,
+            self.reference_process_engine_data,
+            self.multidisciplinary_graphs_shared_y_scale
+        )
+
+        # Initialize the multidisciplinary graph for each group :
+        self.multidisciplinary_graphs = [
+            initialize_multidisciplinary_graph(f"Scénario du groupe {index + 1}")
+            for index in range(self.number_of_groups)
+        ]
+        self.multidisciplinary_figures = []
+        for multidisciplinary_graph, process_engine_data in zip(self.multidisciplinary_graphs, self.process_engines_data):
+            self.multidisciplinary_figures.append(
+                draw_multidisciplinary_graph(
+                    multidisciplinary_graph,
+                    process_engine_data,
+                    self.multidisciplinary_graphs_shared_y_scale
+                )
+            )
+
+
+    def _build_explanation_section(self) -> VBox:
+        """
+        Builds the explanation section of the interface.
+
+        #### Returns :
+        - `VBox` : A vertical box containing the explanation text.
+        """
+        self.explanation_section = draw_explanations()
+
+        return self.explanation_section
+
+
+    def _build_group_selector_section(self) -> VBox:
+        """
+        Builds the group selector section of the interface.
+
+        #### Returns :
+        - `VBox` : A vertical box containing the group selector section title and slider.
+        """
+        # Create the title for the group selector :
+        self.group_selector_title = draw_group_selector_title()
+
+        # Initialize the group selector slider :
+        self.group_selector = initialize_group_selector(
+            default_value = self.number_of_groups
+        )
+
+        # Create the group selector section :
+        self.group_selector_section = VBox(
+            [self.group_selector_title, self.group_selector],
+            layout = Layout(**SECTION_VBOX_LAYOUT)
+        )
+
+        return self.group_selector_section
+
+
+    def _build_checkboxes_grid_section(self) -> VBox:
+        """
+        Builds the checkboxes grid section of the interface.
+
+        #### Returns :
+        - `VBox` : A vertical box containing the checkboxes grid section title, checkbox grid and update button.
+        """
+        # Create the title for the checkboxes grid :
+        self.checkboxes_grid_title = draw_checkboxes_grid_title()
+
+        # Initialize the checkboxes grid :
+        self.checkboxes_grid = initialize_checkboxes_grid(self.number_of_groups, self.checkboxes_lists)
+
+        # Create the update button to update all the figures :
+        self.update_button = draw_update_button()
+        self.update_button.on_click(lambda button: self._update_figures())
+
+        self.update_button_box = Box(
+            [self.update_button],
+            layout = Layout(**BUTTON_BOX_LAYOUT)
+        )
+
+        # Create the checkboxes grid section :
+        self.checkboxes_grid_section = VBox(
+            [
+                self.checkboxes_grid_title,
+                self.checkboxes_grid,
+                self.update_button_box
+            ],
+            layout = Layout(**SECTION_VBOX_LAYOUT)
+        )
+
+        return self.checkboxes_grid_section
+
+
+    def _build_prospective_scenario_section(self) -> VBox:
+        """
+        Builds the prospective scenario section of the interface.
+
+        #### Preconditions :
+        - The `self.initialize_prospective_scenario_graphs` function must be called before this function.
+
+        #### Returns :
+        - `VBox` : A vertical box containing the prospective scenario graphs title, reference prospective scenario box, prospective scenario boxes and group comparison prospective scenario box.
+        """
+        # Create a widget for the title of the reference prospective scenario section :
+        self.prospective_scenario_graphs_title = draw_prospective_scenario_graphs_title()
+
+        # Create the boxes for the prospective scenario figures :
+        self.reference_prospective_scenario_box = Box(
+            [self.reference_prospective_scenario_figure],
+            layout = Layout(**PROSPECTIVE_SCENARIO_BOX_LAYOUT)
+        )
+
+        self.prospective_scenario_boxes = []
+        for figure in self.prospective_scenarios_figures:
+            self.prospective_scenario_boxes.append(
+                Box(
+                    [figure],
+                    layout = Layout(**PROSPECTIVE_SCENARIO_BOX_LAYOUT)
+                )
+            )
+
+        # Create the box for the group comparison prospective scenario figure :
+        self.group_comparison_prospective_scenario_box = Box(
+            [self.group_comparison_prospective_scenario_figure],
+            layout = Layout(**PROSPECTIVE_SCENARIO_BOX_LAYOUT)
+        )
+
+        # Create the prospective scenario section :
+        self.prospective_scenario_section = VBox(
+            [
+                self.prospective_scenario_graphs_title,
+                self.reference_prospective_scenario_box,
+                *self.prospective_scenario_boxes,
+                self.group_comparison_prospective_scenario_box
+            ],
+            layout = Layout(**SECTION_VBOX_LAYOUT)
+        )
+
+        return self.prospective_scenario_section
+
+
+    def _build_multidisciplinary_section(self) -> VBox:
+        """
+        Builds the multidisciplinary section of the interface.
+
+        #### Preconditions :
+        - The `self.initialize_multidisciplinary_graphs` function must be called before this function.
+
+        #### Returns :
+        - `VBox` : A vertical box containing the multidisciplinary graphs title and multidisciplinary boxes.
+        """
+        # Create a widget for the title of the multidisciplinary graphs section :
+        self.multidisciplinary_graphs_title = draw_multidisciplinary_graphs_title()
+
+        # Create the boxes for the multidisciplinary figures (each box contains two figures) :
+        self.multidisciplinary_boxes = []
+
+        # If the number of groups is even, we can pair them up (and center the reference scenario) :
+        if self.number_of_groups % 2 == 0:
+            self.multidisciplinary_boxes.append(
+                Box(
+                    [self.reference_multidisciplinary_figure],
+                    layout = Layout(**MULTIDISCIPLINARY_BOX_LAYOUT)
+                )
+            )
+            for index in range(0, len(self.multidisciplinary_figures), 2):
+                self.multidisciplinary_boxes.append(
+                    Box(
+                        self.multidisciplinary_figures[index : index + 2],
+                        layout = Layout(**MULTIDISCIPLINARY_BOX_LAYOUT)
+                    )
+                )
+
+        # If the number of groups is odd, we add the reference scenario to the first box :
+        else:
+            all_multidisciplinary_figures = [self.reference_multidisciplinary_figure] + self.multidisciplinary_figures
+
+            for index in range(0, len(all_multidisciplinary_figures), 2):
+                self.multidisciplinary_boxes.append(
+                    Box(
+                        all_multidisciplinary_figures[index : index + 2],
+                        layout = Layout(**MULTIDISCIPLINARY_BOX_LAYOUT)
+                    )
+                )
+
+        # Create the multidisciplinary section :
+        self.multidisciplinary_section = VBox(
+            [
+                self.multidisciplinary_graphs_title,
+                *self.multidisciplinary_boxes
+            ],
+            layout = Layout(**SECTION_VBOX_LAYOUT)
+        )
+
+        return self.multidisciplinary_section
+
+
+    def display_interface(self) -> VBox:
+        """
+        Assembles the interface by combining all the sections into a vertical box and returns it.
+
+        #### Returns :
+        - `VBox` : A vertical box containing the entire interface layout.
+        """
+        # Create the container grid layout with the specified number of rows and one column :
+        self.interface = VBox(
+            [
+                self.explanation_section,
+                self.group_selector_section,
+                self.checkboxes_grid_section,
+                self.prospective_scenario_section,
+                self.multidisciplinary_section
+            ],
+            layout = Layout(**SECTION_VBOX_LAYOUT)
+        )
+
+        return self.interface
+
+
+    def _update_figures(self, _button: Button = None) -> None:
+        """
+        Updates the figures based on the selected checkboxes and the process engines.
+        """
+        # Compute the process engines data for each group based on the selected checkboxes :
+        self._compute_process_engines()
+
+        # Update the figures shared y-axis :
+        self.prospective_scenario_graphs_shared_y_scale.min, self.prospective_scenario_graphs_shared_y_scale.max = get_prospective_scenario_y_scales(self.process_engines_data)
+        self.multidisciplinary_graphs_shared_y_scale.min, self.multidisciplinary_graphs_shared_y_scale.max = get_multidisciplinary_graphs_y_scales(self.process_engines_data)
+
+        # Update each figure based on the selected checkboxes :
+        for index in range(self.number_of_groups):
+            self.prospective_scenarios_graphs[index].update(self.process_engines_data[index])
+            self.multidisciplinary_graphs[index].update(self.process_engines_data[index])
+
+        self.group_comparison_prospective_scenario_graph.update(
+            self.reference_process_engine_data,
+            self.process_engines_data
+        )
+
+
+def update_figures(
+    _button: Button,
+    number_of_groups: int,
+    reference_process_engine_data: Dict[str, Any],
+    process_engines: List[ProcessEngine],
+    checkboxes_lists: List[List[Checkbox]],
+    graphs: Dict[str, List[BaseGraph]],
+    shared_y_scales: Dict[str, LinearScale]
+) -> None:
+    """
+    Updates the figures based on the selected checkboxes and the process engines.
+
+    #### Arguments :
+    - `_button` : The button that triggered the update (not used in this function).
+    - `number_of_groups` : The number of groups to update the figures for.
+    - `reference_process_engine_data` : The data of the reference process engine to use for the comparison of Prospective Scenario Group Comparison Graph.
+    - `process_engines` : A list of process engines to compute the new data.
+    - `checkboxes_lists` : A list of lists containing the checkbox widgets for each group.
+    - `graphs` : A dictionary containing the prospective scenario graphs and multidisciplinary graphs.
+
+    #### Returns :
+    - `None` : This function does not return anything, it updates the graphs in place
+    """
+    # Get each type of graph from the dictionary :
+    prospective_scenario_graphs                 = graphs["prospective_scenarios_graphs"]
+    group_comparison_prospective_scenario_graph = graphs["prospective_scenario_group_comparison_graph"][0]
+    multidisciplinary_graphs                    = graphs["multidisciplinary_graphs"]
+
+    # Compute each process based on the selected widgets :
+    new_data = [
+        compute_process_engine(process_engine, checkboxes)
+        for process_engine, checkboxes in zip(process_engines, checkboxes_lists)
+    ]
+
+    # Update the graphs shared y-axis :
+    prospective_scenario_graphs_shared_y_scale = shared_y_scales.get("prospective_scenario_y_scale", None)
+    multidisciplinary_graphs_shared_y_scale    = shared_y_scales.get("multidisciplinary_y_scale", None)
+
+    if prospective_scenario_graphs_shared_y_scale is not None:
+        # Update the shared y-axis scale for the prospective scenario graphs :
+        min_y, max_y = get_prospective_scenario_y_scales(new_data)
+        prospective_scenario_graphs_shared_y_scale.min = min_y
+        prospective_scenario_graphs_shared_y_scale.max = max_y
+
+    if multidisciplinary_graphs_shared_y_scale is not None:
+        # Update the shared y-axis scale for the prospective scenario graphs :
+        min_y, max_y = get_multidisciplinary_graphs_y_scales(new_data)
+        multidisciplinary_graphs_shared_y_scale.min = min_y
+        multidisciplinary_graphs_shared_y_scale.max = max_y
+
+    # Update each graph based on the selected widgets :
+    for index in range(number_of_groups):
+        prospective_scenario_graphs[index].update(new_data[index])
+        multidisciplinary_graphs[index].update(new_data[index])
+
+    group_comparison_prospective_scenario_graph.update(
+        reference_process_engine_data,
+        new_data
+    )

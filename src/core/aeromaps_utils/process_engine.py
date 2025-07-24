@@ -170,12 +170,6 @@ class ProcessEngine:
     def __init__(self) -> None:
         """
         Initialize the process engine with the given configuration.
-
-        #### Arguments :
-        - `configuration_file (str, optional)` : Path to the configuration file. Defaults to None.
-        - `models (list[str], optional)` : List of models to use. Defaults to None.
-        - `use_fleet_model (bool)` : Whether to use the fleet model. Defaults to False.
-        - `add_examples_aircraft_and_subcategory (bool)` : Whether to add example aircraft and subcategories. Defaults to True.
         """
         self.process: AeroMAPSProcess = create_process()
 

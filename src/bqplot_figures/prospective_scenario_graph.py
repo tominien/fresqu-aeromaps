@@ -24,7 +24,7 @@ from bqplot_figures.utils.prospective_scenario_graph_utils import (
 
 
 
-def get_prospective_scenario_y_scales(processes_data: Dict[str, Any]) -> Tuple[float, float]:
+def get_prospective_scenario_y_scales(processes_data: List[Dict[str, Any]]) -> Tuple[float, float]:
     """
     Get the minimal and maximal values of all the y-scales for the historic line, prospective lines and aspects areas from multiple processes data.
 

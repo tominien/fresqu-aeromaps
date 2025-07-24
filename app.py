@@ -28,25 +28,23 @@ panel.extension(
     ]
 )
 
-from ui.notebook_ui import draw_interface
+from ui.fresque_aeromaps_UI import FresqueAeroMapsUI
 
 from utils import APPLICATION_ICON_PATH
 
 
 
 
-def get_app_view(number_of_groups: int) -> BootstrapTemplate:
+def create_application_view() -> BootstrapTemplate:
     """
     Creates the Panel application view for the Fresqu'AéroMaps interface.
-
-    #### Arguments :
-    - `number_of_groups`: The number of groups to display in the interface.
 
     #### Returns :
     - `BootstrapTemplate`: A Panel Bootstrap template containing the application view.
     """
     # Draw the interface :
-    interface = draw_interface(number_of_groups)
+    application = FresqueAeroMapsUI()
+    interface = application.display_interface()
 
     # Create the Panel application view :
     app_view = panel.panel(interface, sizing_mode = "stretch_both")
@@ -61,5 +59,4 @@ def get_app_view(number_of_groups: int) -> BootstrapTemplate:
 
 
 # Launch the Panel server with the application view :
-NUMBER_OF_GROUPS = 3
-get_app_view(NUMBER_OF_GROUPS)
+create_application_view()
