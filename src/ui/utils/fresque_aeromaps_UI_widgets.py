@@ -1,4 +1,4 @@
-from typing import List, Tuple, Union
+from typing import List, Union
 
 from ipywidgets import Box, VBox, Layout, GridspecLayout, Checkbox, HTML, Label, Button, IntSlider
 
