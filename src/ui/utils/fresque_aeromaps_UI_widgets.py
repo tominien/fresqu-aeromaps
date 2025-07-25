@@ -272,7 +272,7 @@ def draw_update_button() -> Button:
     - `Button` : The update button.
     """
     return Button(
-        description = "Calculer",
+        description = "Mettre à jour les graphiques",
         button_style = "success",
         style = BUTTON_STYLE,
         layout = Layout(**BUTTON_LAYOUT)

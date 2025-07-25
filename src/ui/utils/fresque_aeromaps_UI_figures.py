@@ -132,7 +132,7 @@ def draw_prospective_scenario_graph(
     - `Figure` : The drawn figure for the prospective scenario graph.
     """
     figure = prospective_scenario_graph.draw(process_engine_data, y_scale = shared_y_scale)
-    figure.fig_margin = {"top": 60, "bottom": 60, "left": 60, "right": 120}
+    figure.fig_margin = {"top": 60, "bottom": 60, "left": 60, "right": 90}
     figure.layout = Layout(**PROSPECTIVE_SCENARIO_GRAPH_LAYOUT)
 
     return figure

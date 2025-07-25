@@ -131,7 +131,8 @@ PROSPECTIVE_SCENARIO_BOX_LAYOUT = {
     "width": "100%",
     "display": "flex",
     "justify_content": "center",
-    "align_items": "center"
+    "align_items": "center",
+    "overflow": "hidden"
 }
 
 PROSPECTIVE_SCENARIO_GRAPH_LAYOUT = {

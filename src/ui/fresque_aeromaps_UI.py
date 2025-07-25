@@ -1,4 +1,4 @@
-from typing import Any, Dict, List
+from typing import List
 
 from bqplot import LinearScale
 from bqplot_figures.prospective_scenario_graph import ProspectiveScenarioGraph, get_prospective_scenario_y_scales
@@ -39,7 +39,7 @@ from ui.utils.fresque_aeromaps_UI_figures import (
 
 
 
-def create_prospective_scenarios_boxes(prospective_scenarios_figures: List[ProspectiveScenarioGraph]) -> List[Box]:
+def create_prospective_scenarios_boxes(prospective_scenarios_figures: List[ProspectiveScenarioGraph]) -> VBox:
     """
     Creates a list of boxes containing the prospective scenario figures.
 
@@ -47,18 +47,14 @@ def create_prospective_scenarios_boxes(prospective_scenarios_figures: List[Prosp
     - `prospective_scenarios_figures (List[ProspectiveScenarioGraph])` : A list of prospective scenario figures to be displayed in boxes.
 
     #### Returns :
-    - `List[Box]` : A list of boxes containing the prospective scenario figures.
+    - `VBox` : A vertical box containing all the prospective scenario figures.
     """
-    prospective_scenarios_boxes = []
-    for figure in prospective_scenarios_figures:
-        prospective_scenarios_boxes.append(
-            Box(
-                [figure],
-                layout = Layout(**PROSPECTIVE_SCENARIO_BOX_LAYOUT)
-            )
-        )
-
-    return prospective_scenarios_boxes
+    return VBox(
+        [
+            figure for figure in prospective_scenarios_figures
+        ],
+        layout = Layout(**PROSPECTIVE_SCENARIO_BOX_LAYOUT)
+    )
 
 
 def create_multidisciplinary_boxes(
@@ -527,7 +523,7 @@ class FresqueAeroMapsUI:
             [
                 self.prospective_scenario_graphs_title,
                 self.reference_prospective_scenario_box,
-                *self.prospective_scenarios_boxes,
+                self.prospective_scenarios_boxes,
                 self.group_comparison_prospective_scenario_box
             ],
             layout = Layout(**SECTION_VBOX_LAYOUT)
@@ -551,7 +547,7 @@ class FresqueAeroMapsUI:
         self.prospective_scenario_section.children = [
             self.prospective_scenario_graphs_title,
             self.reference_prospective_scenario_box,
-            *self.prospective_scenarios_boxes,
+            self.prospective_scenarios_boxes,
             self.group_comparison_prospective_scenario_box
         ]
 
