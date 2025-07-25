@@ -42,7 +42,7 @@ Tutoriel de lancement de la version "web" :
 - Via le fichier racine `app.py` :
     - `panel serve app.py --address=0.0.0.0 --port=8888 --allow-websocket-origin="*" --prefix="" --index="app"`     
         - *Lors du debug, il est également recommandé d'ajouter l'option `--autoreload` afin de ne pas avoir à relancer l'application à chaque modification du code source.*
-- L'application sera alors accessible à l'adresse http://localhost:8888 (et http://localhost:8888/app).
+- L'application sera alors accessible à l'adresse http://localhost:8888/app (et http://localhost:8888).
 
 Tutoriel de lancement de la version "Jupyter Notebook" :
 
@@ -56,7 +56,7 @@ L'application **Fresqu'AéroMAPS** est hébergée en ligne sur 2 sites.
 
 1. Sur [render.com](https://render.com), à l'adresse suivante : https://tominien.onrender.com.
     - Le temps de chargement initial et de mise à jour de l'application peut être un peu long.
-2. Sur [binder.org](https://mybinder.org), en cliquant sur le bouton suivant : [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/tominien/Fresqu-aeromaps/HEAD?urlpath=%2Fdoc%2Ftree%2Fapp.ipynb)
+2. Sur [binder.org](https://mybinder.org), à l'adresse suivante : https://mybinder.org/v2/gh/tominien/Fresqu-aeromaps/Binder?filepath=app.ipynb
     - Cette version est plus rapide que celle hébergée sur Render, mais elle est moins intuitive.
 
 ## Template du fichier d'environnement
