@@ -149,15 +149,15 @@ def compute_process(
 
         # Budget carbone :
         if "carbon_budget" in cards_ids:
-            ... # TODO: After implementing this card, remove the "[NI] " tag from the card name in the database.
+            ... # TODO: After implementing this card, remove the "[NI] " tag from the card name in the database and the markdown "explanation file".
 
         # Réglementations et mesures économiques :
         if "reglementations_and_economical_measures" in cards_ids:
-            ... # TODO: After implementing this card, remove the "[NI] " tag from the card name in the database.
+            ... # TODO: After implementing this card, remove the "[NI] " tag from the card name in the database and the markdown "explanation file".
 
         # Sensibiliser & Éduquer :
         if "awareness_and_education" in cards_ids:
-            ... # TODO: After implementing this card, remove the "[NI] " tag from the card name in the database.
+            ... # TODO: After implementing this card, remove the "[NI] " tag from the card name in the database and the markdown "explanation file".
 
     process.compute()
     return process.data
