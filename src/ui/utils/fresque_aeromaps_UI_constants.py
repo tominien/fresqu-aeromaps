@@ -160,7 +160,5 @@ MULTIDISCIPLINARY_GRAPH_AND_LEGEND_VBOX_LAYOUT = {
 }
 
 SECTION_VBOX_LAYOUT = {
-    "width": "100%",
-    "align_items": "center",
-    "overflow": "hidden"
+    "width": "100%"
 }
