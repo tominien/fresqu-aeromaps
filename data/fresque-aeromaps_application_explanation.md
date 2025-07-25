@@ -3,7 +3,7 @@ Fresqu'AéroMAPS - Outil de simulation des choix de solution
 </h1>
 
 <h4 align="center">
-Ce notebook a pour but de simuler les choix des différents groupes de l'atelier lors de la partie finale de l'atelier Fresqu'Aéro.
+Ce logiciel a pour but de simuler les choix des différents groupes de l'atelier lors de la partie finale de l'atelier Fresqu'Aéro.
 </h4>
 
 **<u>Cet outil repose sur l'outil AéroMAPS ([Site Web](https://aeromaps.isae-supaero.fr/)) :</u>**
@@ -14,7 +14,7 @@ Planès, T., Delbecq, S., Salgas, A. (2023). AeroMAPS : a framework for performi
 Quelques chiffres importants pour comprendre le scénario de référence
 </h2>
 
-<u>Les résultats des groupes seront ensuite comparés avec un scénario de référence, qui correspond à la tendance actuelle de l'industrie. Quantitativement, les chiffres viennent notamment du scénario Airbus :</u>
+<u>Les résultats des groupes seront ensuite comparés avec un scénario de référence, qui correspond à la tendance actuelle de l'industrie. Quantitativement, les chiffres viennent notamment du scénario Airbus (2024) :</u>
 
 - La croissance du trafic est de 3% par an, constante et conforme aux prévisions de l'OACI.
 - Le renouvellement de la flotte a une période de 20 ans.
