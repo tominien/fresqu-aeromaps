@@ -113,6 +113,7 @@ def compute_process(
     if cards_ids:
         # Sobriété :
         if "sobriety" in cards_ids:
+            parameters.cagr_passenger_short_range_reference_periods_values  = [1.5, 1.5, 1.5]
             parameters.cagr_passenger_medium_range_reference_periods_values = [1.5]
             parameters.cagr_passenger_long_range_reference_periods_values   = [1.5]
             parameters.cagr_freight_reference_periods_values                = [1.5]
@@ -137,15 +138,12 @@ def compute_process(
         if "operations_efficiency" in cards_ids:
             parameters.load_factor_end_year  = 90.0
             parameters.operations_final_gain = 10.0
-            parameters.operations_start_year = 2025
-            parameters.operations_duration   = 25.0
 
         # Technologie :
         if "technology" in cards_ids:
             parameters.energy_per_ask_short_range_dropin_fuel_gain_reference_years_values  = [1.0]
             parameters.energy_per_ask_medium_range_dropin_fuel_gain_reference_years_values = [1.0]
             parameters.energy_per_ask_long_range_dropin_fuel_gain_reference_years_values   = [1.0]
-            parameters.fleet_renewal_duration                                              = 15.0
 
         # Budget carbone :
         if "carbon_budget" in cards_ids:
