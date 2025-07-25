@@ -1,6 +1,6 @@
 from typing import Dict
 
-from crud.crud_cards import get_cards_name
+from src.crud.crud_cards import get_cards_name
 
 
 

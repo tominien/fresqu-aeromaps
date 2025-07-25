@@ -1,12 +1,12 @@
 from typing import List
 
 from bqplot import LinearScale
-from bqplot_figures.prospective_scenario_graph import ProspectiveScenarioGraph, get_prospective_scenario_y_scales
-from bqplot_figures.multidisciplinary_graph import MultidisciplinaryGraph, get_multidisciplinary_graphs_y_scales
+from src.bqplot_figures.prospective_scenario_graph import ProspectiveScenarioGraph, get_prospective_scenario_y_scales
+from src.bqplot_figures.multidisciplinary_graph import MultidisciplinaryGraph, get_multidisciplinary_graphs_y_scales
 
 from ipywidgets import Box, VBox, Layout, Checkbox, Button
 
-from ui.utils.fresque_aeromaps_UI_constants import (
+from src.ui.utils.fresque_aeromaps_UI_constants import (
     CARDS_NAMES,
     DEFAULT_NUMBER_OF_GROUPS,
     BUTTON_BOX_LAYOUT,
@@ -14,7 +14,7 @@ from ui.utils.fresque_aeromaps_UI_constants import (
     MULTIDISCIPLINARY_BOX_LAYOUT,
     SECTION_VBOX_LAYOUT
 )
-from ui.utils.fresque_aeromaps_UI_widgets import (
+from src.ui.utils.fresque_aeromaps_UI_widgets import (
     initialize_group_selector,
     initialize_checkboxes_grid,
     draw_explanations,
@@ -25,7 +25,7 @@ from ui.utils.fresque_aeromaps_UI_widgets import (
     draw_multidisciplinary_graphs_title,
     draw_update_button
 )
-from ui.utils.fresque_aeromaps_UI_figures import (
+from src.ui.utils.fresque_aeromaps_UI_figures import (
     compute_process_engine,
     initialize_process_engine,
     initialize_prospective_scenario_graph,

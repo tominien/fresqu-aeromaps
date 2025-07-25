@@ -28,9 +28,9 @@ panel.extension(
     ]
 )
 
-from ui.fresque_aeromaps_UI import FresqueAeroMapsUI
+from src.ui.fresque_aeromaps_UI import FresqueAeroMapsUI
 
-from utils import APPLICATION_ICON_PATH
+from src.utils import APPLICATION_ICON_PATH
 
 
 

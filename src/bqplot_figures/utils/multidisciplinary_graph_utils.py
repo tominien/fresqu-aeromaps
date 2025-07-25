@@ -1,8 +1,8 @@
 from typing import Any, Dict, List
 
-from crud.crud_multidisciplinary_bars import get_bars, get_bars_names
+from src.crud.crud_multidisciplinary_bars import get_bars, get_bars_names
 
-from core.aeromaps_utils.evaluate_expression import evaluate_expression_aeromaps
+from src.core.aeromaps_utils.evaluate_expression import evaluate_expression_aeromaps
 
 
 

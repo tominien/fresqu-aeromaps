@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-from utils import MULTIDISCIPLINARY_BARS_JSON_PATH
+from src.utils import MULTIDISCIPLINARY_BARS_JSON_PATH
 
 import json
 

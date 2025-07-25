@@ -3,12 +3,12 @@ from typing import Any, Dict, List, Tuple, Optional
 from pandas import concat
 
 from bqplot import Figure, Lines, Axis, LinearScale, Label
-from bqplot_figures.base_graph import BaseGraph
+from src.bqplot_figures.base_graph import BaseGraph
 
-from core.aeromaps_utils.extract_processed_data import get_years
+from src.core.aeromaps_utils.extract_processed_data import get_years
 
-from utils import generate_pastel_palette
-from bqplot_figures.utils.prospective_scenario_graph_utils import (
+from src.utils import generate_pastel_palette
+from src.bqplot_figures.utils.prospective_scenario_graph_utils import (
     get_y_historic_line,
     get_y_prospective_lines,
     get_y_aspects_areas,

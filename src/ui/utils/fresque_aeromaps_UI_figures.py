@@ -1,16 +1,16 @@
 from typing import Any, Dict, List, Optional
 
-from core.aeromaps_utils.process_engine import ProcessEngine
+from src.core.aeromaps_utils.process_engine import ProcessEngine
 
 from bqplot import Figure, LinearScale
-from bqplot_figures.prospective_scenario_graph import ProspectiveScenarioGraph, ProspectiveScenarioGroupComparisonGraph
-from bqplot_figures.multidisciplinary_graph import MultidisciplinaryGraph
+from src.bqplot_figures.prospective_scenario_graph import ProspectiveScenarioGraph, ProspectiveScenarioGroupComparisonGraph
+from src.bqplot_figures.multidisciplinary_graph import MultidisciplinaryGraph
 
 from ipywidgets import VBox, HBox, Layout, Checkbox, HTML, Label
 
-from crud.crud_cards import get_card_id_by_name
+from src.crud.crud_cards import get_card_id_by_name
 
-from ui.utils.fresque_aeromaps_UI_constants import (
+from src.ui.utils.fresque_aeromaps_UI_constants import (
     CARDS_NAMES,
     get_style_string,
     COLORS_PROSPECTIVE_SCENARIO,

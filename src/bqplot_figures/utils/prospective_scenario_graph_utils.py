@@ -2,11 +2,11 @@ from typing import Any, Dict, List, Tuple, Optional
 
 from pandas import Series
 
-from crud.crud_prospective_scenario_aspects import get_aspects, get_aspects_names
+from src.crud.crud_prospective_scenario_aspects import get_aspects, get_aspects_names
 
-from core.aeromaps_utils.evaluate_expression import evaluate_expression_aeromaps
+from src.core.aeromaps_utils.evaluate_expression import evaluate_expression_aeromaps
 
-from utils import PROSPECTIVE_SCENARIO_ASPECTS_LINES_JSON_PATH, get_first_positive_minimal_distance
+from src.utils import PROSPECTIVE_SCENARIO_ASPECTS_LINES_JSON_PATH, get_first_positive_minimal_distance
 
 
 

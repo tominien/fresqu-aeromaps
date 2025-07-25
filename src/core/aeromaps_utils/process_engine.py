@@ -8,7 +8,7 @@ from aeromaps import create_process
 from aeromaps.core.process import AeroMAPSProcess
 from aeromaps.models.parameters import Parameters
 
-from crud.crud_cards import get_cards_ids
+from src.crud.crud_cards import get_cards_ids
 
 
 

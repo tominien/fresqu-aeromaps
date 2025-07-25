@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-from utils import PROSPECTIVE_SCENARIO_ASPECTS_AREAS_JSON_PATH
+from src.utils import PROSPECTIVE_SCENARIO_ASPECTS_AREAS_JSON_PATH
 
 import json
 

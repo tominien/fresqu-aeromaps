@@ -1,10 +1,10 @@
 from typing import Any, Dict, List, Tuple, Optional
 
 from bqplot import Figure, Bars, Axis, LinearScale, OrdinalScale
-from bqplot_figures.base_graph import BaseGraph
+from src.bqplot_figures.base_graph import BaseGraph
 
-from utils import generate_pastel_palette
-from bqplot_figures.utils.multidisciplinary_graph_utils import (
+from src.utils import generate_pastel_palette
+from src.bqplot_figures.utils.multidisciplinary_graph_utils import (
     BARS_NAMES,
     get_y_consumption_bars,
     get_y_budget_bars

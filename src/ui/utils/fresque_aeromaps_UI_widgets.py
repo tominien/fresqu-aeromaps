@@ -1,10 +1,10 @@
-from typing import List, Tuple, Union
+from typing import List, Union
 
 from ipywidgets import Box, VBox, Layout, GridspecLayout, Checkbox, HTML, Label, Button, IntSlider
 
 import markdown
 
-from ui.utils.fresque_aeromaps_UI_constants import (
+from src.ui.utils.fresque_aeromaps_UI_constants import (
     CARDS_NAMES,
     DEFAULT_NUMBER_OF_GROUPS,
     MIN_NUMBER_OF_GROUPS,
@@ -23,7 +23,7 @@ from ui.utils.fresque_aeromaps_UI_constants import (
     CHECKBOXES_GRID_CHECKBOX_LAYOUT
 )
 
-from utils import APPLICATION_EXPLANATIONS_PATH
+from src.utils import APPLICATION_EXPLANATIONS_PATH
 
 
 

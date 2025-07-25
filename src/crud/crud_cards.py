@@ -1,6 +1,6 @@
 from typing import Dict, List
 
-from utils import CARDS_JSON_PATH
+from src.utils import CARDS_JSON_PATH
 
 import json
 

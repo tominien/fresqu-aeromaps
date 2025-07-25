@@ -4,7 +4,7 @@ import builtins
 
 from pandas import DataFrame, Series
 
-from core.aeromaps_utils.extract_processed_data import get_years, get_dataframe_vector_outputs, get_dataframe_climate_outputs
+from src.core.aeromaps_utils.extract_processed_data import get_years, get_dataframe_vector_outputs, get_dataframe_climate_outputs
 
 
 
