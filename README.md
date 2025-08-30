@@ -56,7 +56,7 @@ L'application **Fresqu'AéroMAPS** est hébergée en ligne sur 2 sites.
 
 1. Sur [render.com](https://render.com), à l'adresse suivante : https://tominien.onrender.com.
     - Le temps de chargement initial et de mise à jour de l'application peut être un peu long.
-2. Sur [binder.org](https://mybinder.org), à l'adresse suivante : https://mybinder.org/v2/gh/tominien/fresquaeromaps/Binder?urlpath=lab/tree/app.ipynb
+2. Sur [binder.org](https://mybinder.org), à l'adresse suivante : https://mybinder.org/v2/gh/tominien/fresqu-aeromaps/Binder?urlpath=lab/tree/app.ipynb
     - Cette version est beaucoup plus rapide que celle hébergée sur Render, mais elle est moins intuitive.
 
 ## Template du fichier d'environnement
