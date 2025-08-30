@@ -8,7 +8,7 @@ from crud.crud_cards import get_cards_name
 # Define the general constants:
 CARDS_NAMES = get_cards_name()
 
-DEFAULT_NUMBER_OF_GROUPS = 3
+DEFAULT_NUMBER_OF_GROUPS = 2
 MIN_NUMBER_OF_GROUPS = 1
 MAX_NUMBER_OF_GROUPS = 10
 

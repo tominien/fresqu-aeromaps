@@ -285,7 +285,7 @@ def format_final_values_group_comparison(
         # Label of the lines from the reference scenario :
         final_values_text = [
             final_values_CO2_suffix[0],
-            f"{final_values_CO2_suffix[0]} (Référence)"
+            f"{final_values_CO2_suffix[1]} (Référence)"
         ]
 
         # Label of each group of lines :
