@@ -13,8 +13,8 @@ Afin de pouvoir facilement installer, modifier et utiliser l'application **Fresq
 Vous trouverez ci-dessous une procédure d'installation simple, organisée par étapes :
 
 1. Cloner ce dépôt GitHub :
-    - `git clone https://github.com/tominien/Fresqu-aeromaps.git`
-    - `cd Fresqu-aeromaps`
+    - `git clone https://github.com/tominien/fresqu-aeromaps.git`
+    - `cd fresqu-aeromaps`
 2. Installer les outils de compilation et les headers Python :
     - `sudo apt update`
     - `sudo apt install build-essential python3.12-dev`
