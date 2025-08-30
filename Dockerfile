@@ -3,7 +3,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 RUN apt-get update \
- && apt-get install -y --no-install-recommends build-essential python3-dev libatlas-base-dev gfortran git \
+ && apt-get install -y --no-install-recommends build-essential python3-dev libopenblas-dev liblapack-dev gfortran git \
  && rm -rf /var/lib/apt/lists/*
 
 COPY requirements.txt ./
